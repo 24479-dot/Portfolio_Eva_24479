@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     const totalFrames = 250;
     const fps = 25;
     const largura = 1.8;
+    const versao = "2";
 
     const pasta = "animacao-portfolio/Composição 1/";
 
@@ -26,7 +27,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     const contexto = canvas.getContext("2d");
 
     let textura;
-
 
     // CARREGAR FOTOGRAMAS
 
@@ -45,10 +45,13 @@ document.addEventListener("DOMContentLoaded", async function () {
                 const numero = String(i).padStart(5, "0");
 
                 const caminho =
-                    pasta + "Composição 1_" + numero + ".png";
+                    pasta + "Composição 1_" + numero + ".png?v=" + versao;
 
                 tarefas.push(
-                    fetch(caminho).then(async resposta => {
+
+                    fetch(caminho, { cache: "no-store" })
+
+                    .then(async resposta => {
 
                         if (!resposta.ok) {
                             throw new Error(caminho);
@@ -87,7 +90,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         }
 
-        // Manter as proporções da animação
+        // PROPORÇÕES DA ANIMAÇÃO
 
         const primeiraImagem =
             await createImageBitmap(ficheiros[0]);
@@ -113,7 +116,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             largura * proporcao
         );
 
-        // Criar textura
+        // CRIAR TEXTURA
 
         textura = new AFRAME.THREE.CanvasTexture(canvas);
 
@@ -140,7 +143,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
 
     }
-
 
     // INICIAR ANIMAÇÃO
 
@@ -175,7 +177,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                 const inicio = performance.now();
 
-                // Preparar o fotograma seguinte
+                // PREPARAR FOTOGRAMA SEGUINTE
 
                 if (i + 1 < totalFrames) {
 
@@ -184,7 +186,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                 }
 
-                // Mostrar o fotograma atual
+                // MOSTRAR FOTOGRAMA
 
                 contexto.clearRect(
                     0, 0,
@@ -205,7 +207,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                 animacao.setAttribute("visible", true);
 
-                // Reproduzir a 25 fps
+                // REPRODUZIR A 25 FPS
 
                 const espera = Math.max(
                     0,
@@ -247,7 +249,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     }
 
-
     // TARGET RECONHECIDO
 
     target.addEventListener("targetFound", function () {
@@ -257,7 +258,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         iniciarAnimacao();
 
     });
-
 
     // TARGET PERDIDO
 
@@ -280,7 +280,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     });
 
-
     // ERRO DA CÂMARA
 
     cena.addEventListener("arError", function () {
@@ -289,7 +288,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             "Não foi possível iniciar a câmara.";
 
     });
-
 
     // CARREGAR EXPERIÊNCIA
 
