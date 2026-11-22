@@ -1,0 +1,667 @@
+
+/* =========================================
+   1. TIPOGRAFIA
+========================================= */
+
+@font-face {
+    font-family: "Shrikhand";
+    src: url("fontes/Shrikhand-Regular.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* =========================================
+   2. CORES
+========================================= */
+
+:root {
+    --azul-escuro: #203A58;
+    --azul-claro: #AED5F0;
+    --branco: #FFFFFF;
+}
+
+/* =========================================
+   3. CONFIGURAÇÕES GERAIS
+========================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    width: 100%;
+    background-color: var(--branco);
+    color: var(--azul-escuro);
+    font-family: Arial, sans-serif;
+    overflow-x: hidden;
+}
+
+main {
+    width: 100%;
+}
+
+section {
+    scroll-margin-top: 30px;
+}
+
+img {
+    display: block;
+    max-width: 100%;
+}
+
+h1,
+h2 {
+    font-family: "Shrikhand", cursive;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* =========================================
+   4. CABEÇALHO E MENU
+========================================= */
+
+.cabecalho {
+    width: 100%;
+    padding: 18px 5% 0;
+}
+
+.menu {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    gap: 12px;
+
+    padding: 13px 18px;
+
+    background-color: var(--azul-escuro);
+    border-radius: 50px;
+}
+
+.menu a {
+    color: var(--branco);
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.menu a:hover,
+.menu a:focus-visible {
+    text-decoration: underline;
+}
+
+/* =========================================
+   5. TÍTULO PORTFÓLIO
+========================================= */
+
+.inicio {
+    width: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 35px 4% 20px;
+}
+
+.imagem-titulo {
+    width: 92%;
+    max-width: 900px;
+    height: auto;
+
+    object-fit: contain;
+}
+
+/* =========================================
+   6. SOBRE MIM
+========================================= */
+
+.sobre {
+    width: 90%;
+    max-width: 1000px;
+    margin: 0 auto;
+
+    display: grid;
+    grid-template-columns: 52% minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+
+    padding: 10px 0 25px;
+}
+
+/* FOTOGRAFIA */
+
+.fotografia {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+}
+
+.foto-eva {
+    display: block;
+
+    width: 100%;
+    height: auto;
+
+    object-fit: contain;
+
+    border: none;
+    outline: none;
+    box-shadow: none;
+    border-radius: 0;
+    background: transparent;
+}
+
+/* APRESENTAÇÃO */
+
+.apresentacao {
+    width: 100%;
+    min-width: 0;
+}
+
+.apresentacao h2 {
+    font-size: clamp(24px, 3.5vw, 45px);
+    line-height: 1.1;
+    margin-bottom: 6px;
+}
+
+.apresentacao p {
+    font-size: clamp(12px, 1.25vw, 16px);
+    font-weight: bold;
+    line-height: 1.3;
+    overflow-wrap: break-word;
+}
+
+/* PROGRAMAS */
+
+.programas {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    margin-top: 8px;
+}
+
+.programa-icone {
+    width: 37px;
+    height: 37px;
+    object-fit: contain;
+}
+
+/* =========================================
+   7. CONTACTOS
+========================================= */
+
+.contactos {
+    width: 100%;
+    padding: 18px 5% 20px;
+}
+
+/* BARRA AZUL */
+
+.barra-contactos {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto 9px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 7px 16px;
+
+    background-color: var(--azul-escuro);
+    border-radius: 50px;
+}
+
+.barra-contactos h2 {
+    color: var(--branco);
+    font-size: 26px;
+    font-weight: normal;
+    line-height: 1.2;
+    text-align: center;
+}
+
+/* LINKS DOS CONTACTOS */
+
+.lista-contactos {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    gap: 8px;
+}
+
+.contacto {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    min-width: 0;
+
+    color: var(--azul-escuro);
+    font-size: 12px;
+    font-weight: bold;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+.contacto:hover,
+.contacto:focus-visible {
+    text-decoration: underline;
+}
+
+.icone-contacto {
+    width: 23px;
+    height: 23px;
+
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* =========================================
+   8. EXPERIÊNCIA AR
+========================================= */
+
+.experiencia-ar {
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    padding: 30px 15px 20px;
+    text-align: center;
+}
+
+/* ESTRELA / TRIGGER */
+
+.zona-trigger {
+    position: relative;
+
+    width: min(58%, 480px);
+    max-width: 90vw;
+}
+
+.imagem-trigger {
+    display: block;
+    width: 100%;
+    height: auto;
+
+    object-fit: contain;
+}
+
+/* TEXTO SCAN ME */
+
+.experiencia-ar h2 {
+    font-size: clamp(27px, 3.5vw, 42px);
+    line-height: 1.1;
+    margin-top: 0;
+}
+
+.experiencia-ar p {
+    max-width: 380px;
+
+    margin-top: 3px;
+
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 1.3;
+}
+
+/* =========================================
+   9. ESTRELAS DECORATIVAS
+========================================= */
+
+/*
+   As estrelas já fazem parte
+   das imagens originais.
+*/
+
+.decoracao {
+    display: none;
+}
+
+/* =========================================
+   10. GALERIA
+========================================= */
+
+.galeria {
+    width: 82%;
+    max-width: 900px;
+
+    margin: 15px auto 45px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* MOLDURAS */
+
+.imagem-galeria {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+
+    border: 4px solid var(--azul-escuro);
+    background-color: var(--branco);
+}
+
+/* IMAGENS */
+
+.imagem-galeria > img:first-child {
+    display: block;
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+/* ILUSTRAÇÕES HORIZONTAIS */
+
+.imagem-1,
+.imagem-4 {
+    aspect-ratio: 1.6 / 1;
+}
+
+/* ILUSTRAÇÕES LADO A LADO */
+
+.linha-duas {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1fr);
+
+    gap: 8px;
+}
+
+.linha-duas .imagem-galeria {
+    aspect-ratio: 0.85 / 1;
+}
+
+/* =========================================
+   11. TABLETS
+========================================= */
+
+@media (max-width: 900px) {
+
+    .menu a {
+        font-size: 12px;
+    }
+
+    .inicio {
+        padding: 30px 4% 15px;
+    }
+
+    .sobre {
+        grid-template-columns: 51% minmax(0, 1fr);
+        gap: 12px;
+        padding: 5px 0 18px;
+    }
+
+    .apresentacao h2 {
+        font-size: clamp(24px, 3.5vw, 36px);
+    }
+
+    .apresentacao p {
+        font-size: clamp(11px, 1.7vw, 14px);
+    }
+
+    .programa-icone {
+        width: 32px;
+        height: 32px;
+    }
+
+    .contactos {
+        padding: 15px 5% 18px;
+    }
+
+    .zona-trigger {
+        width: min(62%, 420px);
+    }
+
+    .galeria {
+        width: 84%;
+    }
+}
+
+/* =========================================
+   12. TELEMÓVEIS
+========================================= */
+
+@media (max-width: 600px) {
+
+    /* MENU */
+
+    .cabecalho {
+        padding: 15px 5% 0;
+    }
+
+    .menu {
+        flex-wrap: nowrap;
+        justify-content: space-evenly;
+
+        gap: 5px;
+        padding: 10px 7px;
+    }
+
+    .menu a {
+        font-size: clamp(8px, 2.2vw, 11px);
+    }
+
+    /* TÍTULO */
+
+    .inicio {
+        padding: 24px 4% 15px;
+    }
+
+    .imagem-titulo {
+        width: 96%;
+        max-width: none;
+    }
+
+    /* SOBRE MIM */
+
+    .sobre {
+        width: 90%;
+
+        grid-template-columns: 52% minmax(0, 1fr);
+        align-items: center;
+
+        gap: 7px;
+        padding: 3px 0 16px;
+    }
+
+    .foto-eva {
+        width: 100%;
+        height: auto;
+
+        object-fit: contain;
+
+        border: none;
+    }
+
+    .apresentacao h2 {
+        font-size: clamp(18px, 5vw, 27px);
+        margin-bottom: 3px;
+    }
+
+    .apresentacao p {
+        font-size: clamp(8px, 2.35vw, 11px);
+        line-height: 1.25;
+    }
+
+    .programas {
+        gap: 4px;
+        margin-top: 6px;
+    }
+
+    .programa-icone {
+        width: 23px;
+        height: 23px;
+    }
+
+    /* CONTACTOS */
+
+    .contactos {
+        padding: 18px 5% 15px;
+    }
+
+    .barra-contactos {
+        padding: 6px 10px;
+        margin-bottom: 7px;
+    }
+
+    .barra-contactos h2 {
+        font-size: 22px;
+    }
+
+    .lista-contactos {
+        flex-wrap: nowrap;
+        gap: 5px;
+    }
+
+    .contacto {
+        gap: 3px;
+        font-size: clamp(7px, 1.9vw, 10px);
+    }
+
+    .icone-contacto {
+        width: 17px;
+        height: 17px;
+    }
+
+    /* EXPERIÊNCIA AR */
+
+    .experiencia-ar {
+        padding: 28px 10px 12px;
+    }
+
+    .zona-trigger {
+        width: 65%;
+        max-width: 350px;
+    }
+
+    .experiencia-ar h2 {
+        font-size: 27px;
+    }
+
+    .experiencia-ar p {
+        font-size: 10px;
+    }
+
+    /* GALERIA */
+
+    .galeria {
+        width: 82%;
+        gap: 6px;
+        margin: 10px auto 30px;
+    }
+
+    .imagem-galeria {
+        border-width: 3px;
+    }
+
+    .linha-duas {
+        gap: 6px;
+    }
+}
+
+/* =========================================
+   13. TELEMÓVEIS PEQUENOS
+========================================= */
+
+@media (max-width: 380px) {
+
+    .cabecalho {
+        padding: 12px 5% 0;
+    }
+
+    .menu {
+        gap: 3px;
+        padding: 9px 6px;
+    }
+
+    .menu a {
+        font-size: 8px;
+    }
+
+    .inicio {
+        padding: 20px 3% 12px;
+    }
+
+    .sobre {
+        grid-template-columns: 52% minmax(0, 1fr);
+        gap: 6px;
+    }
+
+    .apresentacao h2 {
+        font-size: 18px;
+    }
+
+    .apresentacao p {
+        font-size: 8px;
+    }
+
+    .programa-icone {
+        width: 21px;
+        height: 21px;
+    }
+
+    .contacto {
+        font-size: 7px;
+    }
+
+    .icone-contacto {
+        width: 15px;
+        height: 15px;
+    }
+
+    .zona-trigger {
+        width: 67%;
+    }
+
+    .galeria {
+        width: 82%;
+    }
+}
+
+/* =========================================
+   14. ACESSIBILIDADE
+========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    html {
+        scroll-behavior: auto;
+    }
+}

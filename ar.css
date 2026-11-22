@@ -1,0 +1,89 @@
+/* CONFIGURAÇÕES GERAIS */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    background-color: black;
+    font-family: Arial, sans-serif;
+}
+
+
+/* EXPERIÊNCIA AR */
+
+a-scene {
+    width: 100%;
+    height: 100%;
+}
+
+
+/* INTERFACE */
+
+.interface {
+    position: fixed;
+    top: 20px;
+    left: 0;
+
+    width: 100%;
+
+    padding: 15px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+
+    z-index: 9999;
+
+    pointer-events: none;
+}
+
+
+/* BOTÃO VOLTAR */
+
+.botao-voltar {
+    padding: 12px 25px;
+
+    background-color: #203A58;
+    color: white;
+
+    border-radius: 30px;
+
+    font-size: 14px;
+    font-weight: bold;
+    text-decoration: none;
+
+    pointer-events: auto;
+}
+
+.botao-voltar:hover {
+    background-color: #AED5F0;
+    color: #203A58;
+}
+
+
+/* MENSAGEM */
+
+#mensagem {
+    background-color: #203A58;
+    color: white;
+
+    padding: 12px 20px;
+
+    border-radius: 20px;
+
+    font-size: 14px;
+    text-align: center;
+
+    max-width: 90%;
+}
