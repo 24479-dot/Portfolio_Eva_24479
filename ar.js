@@ -1,38 +1,44 @@
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
 
-    // ELEMENTOS
+    // ELEMENTOS DA EXPERIÊNCIA
 
     const cena = document.querySelector("a-scene");
     const target = document.querySelector("#target-portfolio");
-    const animacao = document.querySelector("#animacao");
+    const plano = document.querySelector("#animacao");
     const mensagem = document.querySelector("#mensagem");
     const musica = document.querySelector("#musica-ar");
     const botaoSom = document.querySelector("#ativar-som");
 
     // CONFIGURAÇÕES
 
-    const maximoFrames = 250;
-    const duracao = 10000;
-    const esperaInicial = 3000;
-    const largura = 1.8;
-
     const pasta = "animacao-portfolio/imagens animadas/";
-    const versao = "5";
+    const prefixo = "animaçao_";
 
-    const ficheiros = [];
+    const espera = 3000;
+    const duracao = 10000;
 
-    let carregado = false;
-    let targetVisivel = false;
-    let jaExecutado = false;
-    let emReproducao = false;
+    // LIMITE DE SEGURANÇA
+    // A ANIMAÇÃO TERMINA NO PRIMEIRO PNG EM FALTA
 
-    let temporizadorInicio = null;
-    let animacaoFrame = null;
-    let identificador = 0;
-    let inicioReproducao = 0;
+    const limitePesquisa = 300;
+
+    // VARIÁVEIS
+
+    const fotogramas = [];
+
+    let pronto = false;
+    let reconhecido = false;
+    let reproduzido = false;
+    let aReproduzir = false;
+
+    let esperaTimer = null;
+    let pedidoAnimacao = null;
+
+    let inicio = 0;
     let ultimoFrame = -1;
-    let aDescodificar = false;
+    let sessao = 0;
+    let aDesenhar = false;
 
     // TEXTURA
 
@@ -41,13 +47,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let textura = null;
 
-    function mostrarMensagem(texto) {
+    // MENSAGENS
+
+    function informar(texto) {
         mensagem.textContent = texto;
     }
 
     // MÚSICA
 
-    function pararMusica() {
+    function pararSom() {
 
         musica.pause();
 
@@ -59,47 +67,49 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
-    async function reproduzirMusica() {
+    async function tocarSom() {
 
         try {
 
             musica.currentTime = 0;
+
             await musica.play();
 
             botaoSom.hidden = true;
 
         } catch (erro) {
 
+            botaoSom.hidden = false;
+
             console.warn(
-                "É necessário ativar o som manualmente.",
+                "O navegador bloqueou o som automático.",
                 erro
             );
-
-            botaoSom.hidden = false;
 
         }
 
     }
 
-    botaoSom.addEventListener("click", async function () {
+    // AUTORIZAÇÃO MANUAL DO SOM
+
+    botaoSom.addEventListener("click", async () => {
 
         try {
 
-            if (emReproducao) {
+            if (aReproduzir) {
 
-                const segundos =
-                    (performance.now() - inicioReproducao) / 1000;
+                const tempo =
+                    (performance.now() - inicio) / 1000;
 
-                musica.currentTime = Math.min(
-                    segundos,
-                    duracao / 1000
-                );
+                musica.currentTime =
+                    Math.min(tempo, duracao / 1000);
 
                 await musica.play();
 
             } else {
 
                 await musica.play();
+
                 musica.pause();
                 musica.currentTime = 0;
 
@@ -109,151 +119,152 @@ document.addEventListener("DOMContentLoaded", function () {
 
         } catch (erro) {
 
-            console.error("Erro no áudio:", erro);
+            console.error("Erro no som:", erro);
+
+            informar(
+                "Não foi possível ativar a música."
+            );
 
         }
 
     });
 
-    // CARREGAR OS FOTOGRAMAS
+    // ESPERAR PELO A-FRAME
 
-    async function carregarFrames() {
+    function esperarCena() {
 
-        mostrarMensagem("A carregar: 0%");
+        return new Promise(resolve => {
 
-        const resultados = [];
+            if (cena.hasLoaded) {
+                resolve();
+                return;
+            }
 
-        for (let inicio = 0; inicio < maximoFrames; inicio += 8) {
+            cena.addEventListener(
+                "loaded",
+                resolve,
+                { once: true }
+            );
 
-            const tarefas = [];
+        });
 
-            for (
-                let i = inicio;
-                i < Math.min(inicio + 8, maximoFrames);
-                i++
-            ) {
+    }
 
-                const numero = String(i).padStart(5, "0");
+    function esperarMesh() {
 
-                // NOME REAL DOS FICHEIROS
+        return new Promise(resolve => {
 
-                const caminho =
-                    pasta + "animaçao_" + numero +
-                    ".png?v=" + versao;
+            function verificar() {
 
-                tarefas.push(
+                const mesh = plano.getObject3D("mesh");
 
-                    fetch(caminho, {
-                        cache: "no-store"
-                    }).then(async function (resposta) {
+                if (mesh) {
+                    resolve(mesh);
+                } else {
+                    requestAnimationFrame(verificar);
+                }
 
-                        if (resposta.status === 404) {
-                            return { indice: i, ficheiro: null };
-                        }
+            }
 
-                        if (!resposta.ok) {
-                            throw new Error(caminho);
-                        }
+            verificar();
 
-                        return {
-                            indice: i,
-                            ficheiro: await resposta.blob()
-                        };
+        });
 
-                    })
+    }
 
+    // CARREGAR FOTOGRAMAS EXISTENTES
+
+    async function carregarFotogramas() {
+
+        informar("A carregar animação...");
+
+        for (let i = 0; i < limitePesquisa; i++) {
+
+            const numero = String(i).padStart(5, "0");
+
+            const caminho =
+                pasta + prefixo + numero + ".png";
+
+            const resposta = await fetch(caminho, {
+                cache: "no-store"
+            });
+
+            // O PRIMEIRO FICHEIRO EM FALTA
+            // INDICA O FIM DA SEQUÊNCIA
+
+            if (resposta.status === 404) {
+
+                console.log(
+                    "Fim dos fotogramas no índice:", i
+                );
+
+                break;
+            }
+
+            if (!resposta.ok) {
+
+                throw new Error(
+                    "Erro ao carregar " + caminho +
+                    " (HTTP " + resposta.status + ")"
                 );
 
             }
 
-            const lote = await Promise.all(tarefas);
+            const blob = await resposta.blob();
 
-            resultados.push(...lote);
+            fotogramas.push(blob);
 
-            const percentagem = Math.round(
-                Math.min(inicio + 8, maximoFrames) /
-                maximoFrames * 100
-            );
-
-            mostrarMensagem(
-                "A carregar: " + percentagem + "%"
+            informar(
+                "A carregar animação: " +
+                fotogramas.length + " imagens"
             );
 
         }
 
-        resultados.sort((a, b) => a.indice - b.indice);
-
-        // USAR TODOS OS FOTOGRAMAS DISPONÍVEIS
-        // POR ORDEM, SEM SALTAR FOTOGRAMAS
-
-        for (const resultado of resultados) {
-
-            if (!resultado.ficheiro) {
-                break;
-            }
-
-            ficheiros.push(resultado.ficheiro);
-
-        }
-
-        if (ficheiros.length === 0) {
+        if (fotogramas.length === 0) {
 
             throw new Error(
-                "Nenhum fotograma foi encontrado."
+                "Não foi encontrado nenhum fotograma. " +
+                "Confirma o caminho e o nome do PNG inicial."
             );
 
         }
 
         console.log(
-            "Fotogramas encontrados:",
-            ficheiros.length
+            "Total de fotogramas encontrados:",
+            fotogramas.length
         );
 
-        // AGUARDAR PELA CENA
+        await esperarCena();
 
-        if (!cena.hasLoaded) {
+        const mesh = await esperarMesh();
 
-            await new Promise(resolve => {
+        // IDENTIFICAR TAMANHO DAS IMAGENS
 
-                cena.addEventListener(
-                    "loaded",
-                    resolve,
-                    { once: true }
-                );
-
-            });
-
-        }
-
-        // DIMENSÕES
-
-        const primeiraImagem =
-            await createImageBitmap(ficheiros[0]);
+        const primeira =
+            await createImageBitmap(fotogramas[0]);
 
         const proporcao =
-            primeiraImagem.height / primeiraImagem.width;
+            primeira.height / primeira.width;
 
-        canvas.width = Math.min(
-            primeiraImagem.width,
-            1024
-        );
-
+        canvas.width = Math.min(primeira.width, 1024);
         canvas.height = Math.round(
             canvas.width * proporcao
         );
 
-        primeiraImagem.close();
+        primeira.close();
 
-        animacao.setAttribute("width", largura);
-
-        animacao.setAttribute(
+        plano.setAttribute("width", 1.8);
+        plano.setAttribute(
             "height",
-            largura * proporcao
+            1.8 * proporcao
         );
 
-        // TEXTURA
+        // CRIAR TEXTURA TRANSPARENTE
 
-        textura = new AFRAME.THREE.CanvasTexture(canvas);
+        textura = new AFRAME.THREE.CanvasTexture(
+            canvas
+        );
 
         if (AFRAME.THREE.SRGBColorSpace) {
 
@@ -262,60 +273,50 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }
 
-        const mesh = animacao.getObject3D("mesh");
+        mesh.material.map = textura;
+        mesh.material.transparent = true;
+        mesh.material.depthWrite = false;
+        mesh.material.needsUpdate = true;
 
-        if (!mesh) {
-            throw new Error("Não foi possível criar o plano AR.");
-        }
+        pronto = true;
 
-        const material = mesh.material;
+        informar("Aponta a câmara para a estrela!");
 
-        material.map = textura;
-        material.transparent = true;
-        material.needsUpdate = true;
-
-        carregado = true;
-
-        mostrarMensagem(
-            "Aponta a câmara para a estrela!"
-        );
-
-        if (targetVisivel && !jaExecutado) {
-            prepararInicio();
+        if (reconhecido) {
+            preparar();
         }
 
     }
 
-    // DESENHAR FOTOGRAMA
+    // DESENHAR UMA IMAGEM
 
-    async function mostrarFrame(numero, sessao) {
+    async function desenharFrame(numero, id) {
 
-        aDescodificar = true;
+        aDesenhar = true;
 
         let imagem = null;
 
         try {
 
             imagem = await createImageBitmap(
-                ficheiros[numero]
+                fotogramas[numero]
             );
 
-            if (
-                sessao !== identificador ||
-                !emReproducao
-            ) {
+            if (id !== sessao || !aReproduzir) {
                 return;
             }
 
             contexto.clearRect(
-                0, 0,
+                0,
+                0,
                 canvas.width,
                 canvas.height
             );
 
             contexto.drawImage(
                 imagem,
-                0, 0,
+                0,
+                0,
                 canvas.width,
                 canvas.height
             );
@@ -324,746 +325,217 @@ document.addEventListener("DOMContentLoaded", function () {
 
         } catch (erro) {
 
-            console.error("Erro no fotograma:", erro);
-
-        } finally {
-
-            if (imagem) {
-                imagem.close();
-            }
-
-            aDescodificar = false;
-
-        }
-
-    }
-
-    // REPRODUÇÃO DA ANIMAÇÃO
-
-    function atualizarAnimacao(sessao) {
-
-        if (
-            sessao !== identificador ||
-            !emReproducao
-        ) {
-            return;
-        }
-
-        const decorrido =
-            performance.now() - inicioReproducao;
-
-        if (decorrido >= duracao) {
-            terminarAnimacao();
-            return;
-        }
-
-        // DISTRIBUIR OS FOTOGRAMAS POR 10 SEGUNDOS
-
-        const numero = Math.min(
-            ficheiros.length - 1,
-            Math.floor(
-                (decorrido / duracao) * ficheiros.length
-            )
-        );
-
-        if (
-            numero !== ultimoFrame &&
-            !aDescodificar
-        ) {
-
-            ultimoFrame = numero;
-            mostrarFrame(numero, sessao);
-
-        }
-
-        animacaoFrame = requestAnimationFrame(
-            () => atualizarAnimacao(sessao)
-        );
-
-    }
-
-    // INICIAR EXPERIÊNCIA
-
-    function iniciarAnimacao() {
-
-        if (
-            !carregado ||
-            !targetVisivel ||
-            jaExecutado
-        ) {
-            return;
-        }
-
-        jaExecutado = true;
-        emReproducao = true;
-
-        const sessao = ++identificador;
-
-        ultimoFrame = -1;
-        inicioReproducao = performance.now();
-
-        animacao.setAttribute("visible", true);
-
-        mostrarMensagem(
-            "Descobre as minhas ilustrações!"
-        );
-
-        reproduzirMusica();
-
-        atualizarAnimacao(sessao);
-
-    }
-
-    // ESPERAR 3 SEGUNDOS
-
-    function prepararInicio() {
-
-        if (
-            !carregado ||
-            !targetVisivel ||
-            jaExecutado ||
-            temporizadorInicio !== null
-        ) {
-            return;
-        }
-
-        mostrarMensagem(
-            "Estrela reconhecida! A iniciar em 3 segundos..."
-        );
-
-        temporizadorInicio = setTimeout(() => {
-
-            temporizadorInicio = null;
-
-            if (targetVisivel) {
-                iniciarAnimacao();
-            }
-
-        }, esperaInicial);
-
-    }
-
-    // TERMINAR APÓS 10 SEGUNDOS
-
-    function terminarAnimacao() {
-
-        emReproducao = false;
-        identificador++;
-
-        if (animacaoFrame !== null) {
-            cancelAnimationFrame(animacaoFrame);
-            animacaoFrame = null;
-        }
-
-        animacao.setAttribute("visible", false);
-
-        pararMusica();
-
-        mostrarMensagem("Experiência concluída!");
-
-    }
-
-    // CANCELAR SE O TARGET DESAPARECER
-
-    function cancelarExperiencia() {
-
-        clearTimeout(temporizadorInicio);
-        temporizadorInicio = null;
-
-        if (animacaoFrame !== null) {
-            cancelAnimationFrame(animacaoFrame);
-            animacaoFrame = null;
-        }
-
-        identificador++;
-
-        emReproducao = false;
-        jaExecutado = false;
-        ultimoFrame = -1;
-
-        animacao.setAttribute("visible", false);
-
-        pararMusica();
-
-        if (carregado) {
-            mostrarMensagem(
-                "Aponta a câmara para a estrela!"
-            );
-        }
-
-    }
-
-    // RECONHECIMENTO DO TARGET
-
-    target.addEventListener("targetFound", function () {
-
-        targetVisivel = true;
-        prepararInicio();
-
-    });
-
-    target.addEventListener("targetLost", function () {
-
-        targetVisivel = false;
-        cancelarExperiencia();
-
-    });
-
-    // ERRO DA CÂMARA
-
-    cena.addEventListener("arError", function () {
-
-        mostrarMensagem(
-            "Não foi possível iniciar a câmara."
-        );
-
-    });
-
-    // CARREGAR TUDO
-
-    carregarFrames().catch(function (erro) {
-
-        mostrarMensagem(
-            "Erro ao carregar os fotogramas."
-        );
-
-        console.error(erro);
-
-    });
-
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-
-    // ELEMENTOS
-
-    const cena = document.querySelector("a-scene");
-    const target = document.querySelector("#target-portfolio");
-    const animacao = document.querySelector("#animacao");
-    const mensagem = document.querySelector("#mensagem");
-    const musica = document.querySelector("#musica-ar");
-    const botaoSom = document.querySelector("#ativar-som");
-
-    // CONFIGURAÇÕES
-
-    const maximoFrames = 250;
-    const duracao = 10000;
-    const esperaInicial = 3000;
-    const largura = 1.8;
-
-    const pasta = "animacao-portfolio/imagens animadas/";
-    const versao = "5";
-
-    const ficheiros = [];
-
-    let carregado = false;
-    let targetVisivel = false;
-    let jaExecutado = false;
-    let emReproducao = false;
-
-    let temporizadorInicio = null;
-    let animacaoFrame = null;
-    let identificador = 0;
-    let inicioReproducao = 0;
-    let ultimoFrame = -1;
-    let aDescodificar = false;
-
-    // TEXTURA
-
-    const canvas = document.createElement("canvas");
-    const contexto = canvas.getContext("2d");
-
-    let textura = null;
-
-    function mostrarMensagem(texto) {
-        mensagem.textContent = texto;
-    }
-
-    // MÚSICA
-
-    function pararMusica() {
-
-        musica.pause();
-
-        try {
-            musica.currentTime = 0;
-        } catch (erro) {
-            console.warn(erro);
-        }
-
-    }
-
-    async function reproduzirMusica() {
-
-        try {
-
-            musica.currentTime = 0;
-            await musica.play();
-
-            botaoSom.hidden = true;
-
-        } catch (erro) {
-
-            console.warn(
-                "É necessário ativar o som manualmente.",
+            console.error(
+                "Erro no fotograma " + numero,
                 erro
             );
 
-            botaoSom.hidden = false;
-
-        }
-
-    }
-
-    botaoSom.addEventListener("click", async function () {
-
-        try {
-
-            if (emReproducao) {
-
-                const segundos =
-                    (performance.now() - inicioReproducao) / 1000;
-
-                musica.currentTime = Math.min(
-                    segundos,
-                    duracao / 1000
-                );
-
-                await musica.play();
-
-            } else {
-
-                await musica.play();
-                musica.pause();
-                musica.currentTime = 0;
-
-            }
-
-            botaoSom.hidden = true;
-
-        } catch (erro) {
-
-            console.error("Erro no áudio:", erro);
-
-        }
-
-    });
-
-    // CARREGAR OS FOTOGRAMAS
-
-    async function carregarFrames() {
-
-        mostrarMensagem("A carregar: 0%");
-
-        const resultados = [];
-
-        for (let inicio = 0; inicio < maximoFrames; inicio += 8) {
-
-            const tarefas = [];
-
-            for (
-                let i = inicio;
-                i < Math.min(inicio + 8, maximoFrames);
-                i++
-            ) {
-
-                const numero = String(i).padStart(5, "0");
-
-                // NOME REAL DOS FICHEIROS
-
-                const caminho =
-                    pasta + "animaçao_" + numero +
-                    ".png?v=" + versao;
-
-                tarefas.push(
-
-                    fetch(caminho, {
-                        cache: "no-store"
-                    }).then(async function (resposta) {
-
-                        if (resposta.status === 404) {
-                            return { indice: i, ficheiro: null };
-                        }
-
-                        if (!resposta.ok) {
-                            throw new Error(caminho);
-                        }
-
-                        return {
-                            indice: i,
-                            ficheiro: await resposta.blob()
-                        };
-
-                    })
-
-                );
-
-            }
-
-            const lote = await Promise.all(tarefas);
-
-            resultados.push(...lote);
-
-            const percentagem = Math.round(
-                Math.min(inicio + 8, maximoFrames) /
-                maximoFrames * 100
-            );
-
-            mostrarMensagem(
-                "A carregar: " + percentagem + "%"
-            );
-
-        }
-
-        resultados.sort((a, b) => a.indice - b.indice);
-
-        // USAR TODOS OS FOTOGRAMAS DISPONÍVEIS
-        // POR ORDEM, SEM SALTAR FOTOGRAMAS
-
-        for (const resultado of resultados) {
-
-            if (!resultado.ficheiro) {
-                break;
-            }
-
-            ficheiros.push(resultado.ficheiro);
-
-        }
-
-        if (ficheiros.length === 0) {
-
-            throw new Error(
-                "Nenhum fotograma foi encontrado."
-            );
-
-        }
-
-        console.log(
-            "Fotogramas encontrados:",
-            ficheiros.length
-        );
-
-        // AGUARDAR PELA CENA
-
-        if (!cena.hasLoaded) {
-
-            await new Promise(resolve => {
-
-                cena.addEventListener(
-                    "loaded",
-                    resolve,
-                    { once: true }
-                );
-
-            });
-
-        }
-
-        // DIMENSÕES
-
-        const primeiraImagem =
-            await createImageBitmap(ficheiros[0]);
-
-        const proporcao =
-            primeiraImagem.height / primeiraImagem.width;
-
-        canvas.width = Math.min(
-            primeiraImagem.width,
-            1024
-        );
-
-        canvas.height = Math.round(
-            canvas.width * proporcao
-        );
-
-        primeiraImagem.close();
-
-        animacao.setAttribute("width", largura);
-
-        animacao.setAttribute(
-            "height",
-            largura * proporcao
-        );
-
-        // TEXTURA
-
-        textura = new AFRAME.THREE.CanvasTexture(canvas);
-
-        if (AFRAME.THREE.SRGBColorSpace) {
-
-            textura.colorSpace =
-                AFRAME.THREE.SRGBColorSpace;
-
-        }
-
-        const mesh = animacao.getObject3D("mesh");
-
-        if (!mesh) {
-            throw new Error("Não foi possível criar o plano AR.");
-        }
-
-        const material = mesh.material;
-
-        material.map = textura;
-        material.transparent = true;
-        material.needsUpdate = true;
-
-        carregado = true;
-
-        mostrarMensagem(
-            "Aponta a câmara para a estrela!"
-        );
-
-        if (targetVisivel && !jaExecutado) {
-            prepararInicio();
-        }
-
-    }
-
-    // DESENHAR FOTOGRAMA
-
-    async function mostrarFrame(numero, sessao) {
-
-        aDescodificar = true;
-
-        let imagem = null;
-
-        try {
-
-            imagem = await createImageBitmap(
-                ficheiros[numero]
-            );
-
-            if (
-                sessao !== identificador ||
-                !emReproducao
-            ) {
-                return;
-            }
-
-            contexto.clearRect(
-                0, 0,
-                canvas.width,
-                canvas.height
-            );
-
-            contexto.drawImage(
-                imagem,
-                0, 0,
-                canvas.width,
-                canvas.height
-            );
-
-            textura.needsUpdate = true;
-
-        } catch (erro) {
-
-            console.error("Erro no fotograma:", erro);
-
         } finally {
 
             if (imagem) {
                 imagem.close();
             }
 
-            aDescodificar = false;
+            aDesenhar = false;
 
         }
 
     }
 
-    // REPRODUÇÃO DA ANIMAÇÃO
+    // ATUALIZAR ANIMAÇÃO
 
-    function atualizarAnimacao(sessao) {
+    function atualizar(id) {
 
-        if (
-            sessao !== identificador ||
-            !emReproducao
-        ) {
+        if (!aReproduzir || id !== sessao) {
             return;
         }
 
-        const decorrido =
-            performance.now() - inicioReproducao;
+        const decorrido = performance.now() - inicio;
 
         if (decorrido >= duracao) {
-            terminarAnimacao();
+            terminar();
             return;
         }
 
-        // DISTRIBUIR OS FOTOGRAMAS POR 10 SEGUNDOS
+        // AJUSTA O NÚMERO REAL DE IMAGENS
+        // AOS 10 SEGUNDOS DA EXPERIÊNCIA
 
-        const numero = Math.min(
-            ficheiros.length - 1,
+        const frame = Math.min(
+            fotogramas.length - 1,
             Math.floor(
-                (decorrido / duracao) * ficheiros.length
+                (decorrido / duracao) *
+                fotogramas.length
             )
         );
 
         if (
-            numero !== ultimoFrame &&
-            !aDescodificar
+            frame !== ultimoFrame &&
+            !aDesenhar
         ) {
 
-            ultimoFrame = numero;
-            mostrarFrame(numero, sessao);
+            ultimoFrame = frame;
+            desenharFrame(frame, id);
 
         }
 
-        animacaoFrame = requestAnimationFrame(
-            () => atualizarAnimacao(sessao)
+        pedidoAnimacao = requestAnimationFrame(
+            () => atualizar(id)
         );
 
     }
 
-    // INICIAR EXPERIÊNCIA
+    // COMEÇAR ANIMAÇÃO
 
-    function iniciarAnimacao() {
+    function começar() {
 
         if (
-            !carregado ||
-            !targetVisivel ||
-            jaExecutado
+            !pronto ||
+            !reconhecido ||
+            reproduzido
         ) {
             return;
         }
 
-        jaExecutado = true;
-        emReproducao = true;
+        reproduzido = true;
+        aReproduzir = true;
 
-        const sessao = ++identificador;
+        const id = ++sessao;
 
         ultimoFrame = -1;
-        inicioReproducao = performance.now();
+        inicio = performance.now();
 
-        animacao.setAttribute("visible", true);
+        plano.setAttribute("visible", true);
 
-        mostrarMensagem(
-            "Descobre as minhas ilustrações!"
-        );
+        informar("Descobre as minhas ilustrações!");
 
-        reproduzirMusica();
+        tocarSom();
 
-        atualizarAnimacao(sessao);
+        atualizar(id);
 
     }
 
-    // ESPERAR 3 SEGUNDOS
+    // CONTAGEM DOS 3 SEGUNDOS
 
-    function prepararInicio() {
+    function preparar() {
 
         if (
-            !carregado ||
-            !targetVisivel ||
-            jaExecutado ||
-            temporizadorInicio !== null
+            !pronto ||
+            !reconhecido ||
+            reproduzido ||
+            esperaTimer !== null
         ) {
             return;
         }
 
-        mostrarMensagem(
+        informar(
             "Estrela reconhecida! A iniciar em 3 segundos..."
         );
 
-        temporizadorInicio = setTimeout(() => {
+        esperaTimer = setTimeout(() => {
 
-            temporizadorInicio = null;
+            esperaTimer = null;
 
-            if (targetVisivel) {
-                iniciarAnimacao();
+            if (reconhecido) {
+                começar();
             }
 
-        }, esperaInicial);
+        }, espera);
 
     }
 
-    // TERMINAR APÓS 10 SEGUNDOS
+    // TERMINAR ANIMAÇÃO
 
-    function terminarAnimacao() {
+    function terminar() {
 
-        emReproducao = false;
-        identificador++;
+        aReproduzir = false;
+        sessao++;
 
-        if (animacaoFrame !== null) {
-            cancelAnimationFrame(animacaoFrame);
-            animacaoFrame = null;
+        if (pedidoAnimacao !== null) {
+
+            cancelAnimationFrame(pedidoAnimacao);
+            pedidoAnimacao = null;
+
         }
 
-        animacao.setAttribute("visible", false);
+        plano.setAttribute("visible", false);
 
-        pararMusica();
+        pararSom();
 
-        mostrarMensagem("Experiência concluída!");
+        informar("Experiência concluída!");
 
     }
 
-    // CANCELAR SE O TARGET DESAPARECER
+    // CANCELAR AO PERDER A ESTRELA
 
-    function cancelarExperiencia() {
+    function cancelar() {
 
-        clearTimeout(temporizadorInicio);
-        temporizadorInicio = null;
+        clearTimeout(esperaTimer);
+        esperaTimer = null;
 
-        if (animacaoFrame !== null) {
-            cancelAnimationFrame(animacaoFrame);
-            animacaoFrame = null;
+        aReproduzir = false;
+        reproduzido = false;
+
+        sessao++;
+
+        if (pedidoAnimacao !== null) {
+
+            cancelAnimationFrame(pedidoAnimacao);
+            pedidoAnimacao = null;
+
         }
 
-        identificador++;
-
-        emReproducao = false;
-        jaExecutado = false;
         ultimoFrame = -1;
 
-        animacao.setAttribute("visible", false);
+        plano.setAttribute("visible", false);
 
-        pararMusica();
+        pararSom();
 
-        if (carregado) {
-            mostrarMensagem(
-                "Aponta a câmara para a estrela!"
-            );
+        if (pronto) {
+            informar("Aponta a câmara para a estrela!");
         }
 
     }
 
-    // RECONHECIMENTO DO TARGET
+    // DETETAR ESTRELA
 
-    target.addEventListener("targetFound", function () {
+    target.addEventListener("targetFound", () => {
 
-        targetVisivel = true;
-        prepararInicio();
+        reconhecido = true;
+        preparar();
 
     });
 
-    target.addEventListener("targetLost", function () {
+    target.addEventListener("targetLost", () => {
 
-        targetVisivel = false;
-        cancelarExperiencia();
+        reconhecido = false;
+        cancelar();
 
     });
 
     // ERRO DA CÂMARA
 
-    cena.addEventListener("arError", function () {
+    cena.addEventListener("arError", () => {
 
-        mostrarMensagem(
+        informar(
             "Não foi possível iniciar a câmara."
         );
 
     });
 
-    // CARREGAR TUDO
+    // INICIAR CARREGAMENTO
 
-    carregarFrames().catch(function (erro) {
+    carregarFotogramas().catch(erro => {
 
-        mostrarMensagem(
+        console.error(
+            "Erro na experiência AR:",
+            erro
+        );
+
+        informar(
             "Erro ao carregar os fotogramas."
         );
- 
-    
-        console.error(erro);
 
     });
 
 });
+
