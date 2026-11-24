@@ -1,87 +1,86 @@
+
 <!DOCTYPE html>
 <html lang="pt-PT">
 
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
+          content="width=device-width, initial-scale=1.0">
 
     <title>Experiência AR | Eva Guedelha</title>
 
-    <!-- CSS -->
-
-    <link rel="stylesheet" href="ar.css?v=3">
+    <!-- ESTILOS -->
+    <link rel="stylesheet" href="ar.css?v=4">
 
     <!-- A-FRAME -->
-
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
     <!-- MINDAR -->
-
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
     <!-- JAVASCRIPT -->
-
-    <script src="ar.js?v=2" defer></script>
-
+    <script src="ar.js?v=4" defer></script>
 </head>
 
 <body>
 
     <!-- INTERFACE -->
+    <div class="interface">
 
-    <a href="index.html" id="voltar">
-        Voltar
-    </a>
+        <a href="index.html" id="voltar">
+            Voltar
+        </a>
 
-    <div id="mensagem">
-        A carregar a experiência...
+        <p id="mensagem">
+            A carregar a experiência...
+        </p>
+
+        <button id="ativar-som" type="button">
+            Ativar som
+        </button>
+
     </div>
 
-    <!-- CENA DE REALIDADE AUMENTADA -->
+    <!-- MÚSICA -->
+    <audio
+        id="musica-ar"
+        preload="auto"
+        playsinline
+        src="animacao-portfolio/musica/musica do portefolio.mp3">
+    </audio>
 
+    <!-- REALIDADE AUMENTADA -->
     <a-scene
-
-        mindar-image="imageTargetSrc: ./target/target.mind;"
+        mindar-image="
+            imageTargetSrc: ./target/target.mind;
+            uiScanning: no;"
 
         color-space="sRGB"
 
-        renderer="colorManagement: true; physicallyCorrectLights: true"
+        renderer="
+            colorManagement: true;
+            physicallyCorrectLights: true"
 
         vr-mode-ui="enabled: false"
 
         device-orientation-permission-ui="enabled: false">
 
         <!-- CÂMARA -->
-
         <a-camera
-
             position="0 0 0"
-
             look-controls="enabled: false">
-
         </a-camera>
 
-        <!-- TARGET -->
-
+        <!-- RECONHECIMENTO DA ESTRELA -->
         <a-entity
-
             id="target-portfolio"
-
             mindar-image-target="targetIndex: 0">
 
-            <!-- ANIMAÇÃO -->
-
+            <!-- ANIMAÇÃO DAS ILUSTRAÇÕES -->
             <a-plane
-
                 id="animacao"
-
                 position="0 0 0.05"
-
                 width="1.8"
-
                 height="1"
 
                 material="
@@ -90,7 +89,6 @@
                     depthWrite: false;"
 
                 visible="false">
-
             </a-plane>
 
         </a-entity>
@@ -98,5 +96,4 @@
     </a-scene>
 
 </body>
-
 </html>

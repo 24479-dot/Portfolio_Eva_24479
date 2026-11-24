@@ -1,3 +1,4 @@
+
 /* CONFIGURAÇÕES GERAIS */
 
 * {
@@ -14,32 +15,46 @@ body {
 }
 
 body {
-    background-color: black;
+    background-color: #000000;
     font-family: Arial, sans-serif;
 }
 
-
-/* EXPERIÊNCIA AR */
+/* CENA AR */
 
 a-scene {
     width: 100%;
     height: 100%;
 }
 
+/* INTERFACE */
+
+.interface {
+    position: fixed;
+    top: 25px;
+    left: 0;
+
+    width: 100%;
+    padding: 0 15px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+
+    z-index: 9999;
+
+    pointer-events: none;
+}
 
 /* BOTÃO VOLTAR */
 
 #voltar {
-    position: fixed;
-    top: 30px;
-    left: 50%;
-
-    transform: translateX(-50%);
+    display: inline-block;
 
     padding: 12px 30px;
 
     background-color: #203A58;
-    color: white;
+    color: #FFFFFF;
 
     border: 2px solid #AED5F0;
     border-radius: 30px;
@@ -48,47 +63,77 @@ a-scene {
     font-weight: bold;
     text-decoration: none;
 
-    z-index: 10000;
+    pointer-events: auto;
 
-    transition: 0.3s;
+    transition:
+        background-color 0.3s,
+        color 0.3s;
 }
 
-#voltar:hover {
+#voltar:hover,
+#voltar:focus-visible {
     background-color: #AED5F0;
     color: #203A58;
 }
 
-
-/* MENSAGEM DE CARREGAMENTO */
+/* MENSAGENS */
 
 #mensagem {
-    position: fixed;
-    top: 90px;
-    left: 50%;
-
-    transform: translateX(-50%);
-
     background-color: #203A58;
-    color: white;
+    color: #FFFFFF;
 
     padding: 12px 20px;
 
     border: 2px solid #AED5F0;
-    border-radius: 30px;
+    border-radius: 25px;
 
     font-size: 14px;
+    line-height: 1.4;
+    font-weight: bold;
     text-align: center;
 
     width: max-content;
-    max-width: 85%;
-
-    z-index: 9999;
+    max-width: 90%;
 
     pointer-events: none;
 }
 
+/* BOTÃO DE SOM */
 
-/* SCANNER */
+#ativar-som {
+    padding: 11px 24px;
+
+    background-color: #AED5F0;
+    color: #203A58;
+
+    border: 2px solid #203A58;
+    border-radius: 30px;
+
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+
+    cursor: pointer;
+
+    pointer-events: auto;
+
+    transition:
+        background-color 0.3s,
+        color 0.3s;
+}
+
+#ativar-som:hover,
+#ativar-som:focus-visible {
+    background-color: #203A58;
+    color: #FFFFFF;
+    border-color: #AED5F0;
+}
+
+#ativar-som[hidden] {
+    display: none;
+}
+
+/* SCANNER MINDAR */
 
 .mindar-ui-scanning .inner {
     border-color: #AED5F0 !important;
@@ -97,4 +142,31 @@ a-scene {
 .mindar-ui-scanning .scanline {
     background-color: #AED5F0 !important;
     box-shadow: 0 0 15px #AED5F0;
+}
+
+/* ADAPTAÇÃO PARA TELEMÓVEIS */
+
+@media (max-width: 600px) {
+
+    .interface {
+        top: 18px;
+        gap: 10px;
+        padding: 0 12px;
+    }
+
+    #voltar {
+        padding: 10px 25px;
+        font-size: 13px;
+    }
+
+    #mensagem {
+        padding: 10px 16px;
+        font-size: 12px;
+    }
+
+    #ativar-som {
+        padding: 10px 20px;
+        font-size: 12px;
+    }
+
 }
