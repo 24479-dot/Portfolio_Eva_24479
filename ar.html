@@ -3,97 +3,213 @@
 <html lang="pt-PT">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#203A58">
 
-    <title>Experiência AR | Eva Guedelha</title>
+  <title>Experiência AR | Eva Guedelha</title>
 
-    <!-- ESTILOS -->
-    <link rel="stylesheet" href="ar.css?v=4">
-
-    <!-- A-FRAME -->
-    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-
-    <!-- MINDAR -->
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-
-    <!-- JAVASCRIPT -->
-    <script src="ar.js?v=4" defer></script>
+  <link rel="stylesheet" href="ar.css?v=8">
+  <script src="ar.js?v=8" defer></script>
 </head>
 
 <body>
 
-    <!-- INTERFACE -->
-    <div class="interface">
+<main class="app-ar">
 
-        <a href="index.html" id="voltar">
-            Voltar
-        </a>
+  <!-- ESTRELAS DECORATIVAS -->
+  <div class="estrelas" aria-hidden="true">
+    <span class="estrela e1">✦</span>
+    <span class="estrela e2">✧</span>
+    <span class="estrela e3">✦</span>
+    <span class="estrela e4">✧</span>
+    <span class="estrela e5">✧</span>
+    <span class="estrela e6">✦</span>
+  </div>
 
-        <p id="mensagem">
-            A carregar a experiência...
-        </p>
+  <!-- ECRÃ INICIAL -->
+  <section class="ecra ativo" id="ecra-inicio">
 
-        <button id="ativar-som" type="button">
-            Ativar som
-        </button>
+    <div class="conteudo">
+
+      <div class="selo">
+        ✦ EVA GUEDELHA ✦
+      </div>
+
+      <div class="icone-grande" aria-hidden="true">
+        ✧
+      </div>
+
+      <p class="sobretitulo">
+        ILUSTRAÇÃO DIGITAL
+      </p>
+
+      <h1>
+        Experiência <em>AR</em>
+      </h1>
+
+      <p class="descricao">
+        Aponta a câmara para a estrela e descobre
+        as minhas ilustrações de uma forma diferente.
+      </p>
+
+      <button
+        class="botao botao-principal"
+        id="iniciar"
+        type="button">
+        Iniciar experiência ✦
+      </button>
+
+      <p class="nota">
+        Vamos precisar de acesso à câmara do teu telemóvel.
+      </p>
+
+      <a class="link-discreto" href="index.html">
+        Voltar ao portefólio
+      </a>
 
     </div>
 
-    <!-- MÚSICA -->
-    <audio
-        id="musica-ar"
-        preload="auto"
-        playsinline
-        src="animacao-portfolio/musica/musica do portefolio.mp3">
-    </audio>
+  </section>
 
-    <!-- REALIDADE AUMENTADA -->
-    <a-scene
-        mindar-image="
-            imageTargetSrc: ./target/target.mind;
-            uiScanning: no;"
+  <!-- ECRÃ DE CARREGAMENTO -->
+  <section
+    class="ecra"
+    id="ecra-carregamento"
+    aria-live="polite">
 
-        color-space="sRGB"
+    <div class="conteudo">
 
-        renderer="
-            colorManagement: true;
-            physicallyCorrectLights: true"
+      <div class="selo">
+        ✦ SÓ MAIS UM INSTANTE ✦
+      </div>
 
-        vr-mode-ui="enabled: false"
+      <div
+        class="anel-progresso"
+        id="anel-progresso"
+        style="--progresso:0">
 
-        device-orientation-permission-ui="enabled: false">
+        <div class="anel-interior">
+          <span id="percentagem">0%</span>
+        </div>
 
-        <!-- CÂMARA -->
-        <a-camera
-            position="0 0 0"
-            look-controls="enabled: false">
-        </a-camera>
+      </div>
 
-        <!-- RECONHECIMENTO DA ESTRELA -->
-        <a-entity
-            id="target-portfolio"
-            mindar-image-target="targetIndex: 0">
+      <h2>A preparar a magia...</h2>
 
-            <!-- ANIMAÇÃO DAS ILUSTRAÇÕES -->
-            <a-plane
-                id="animacao"
-                position="0 0 0.05"
-                width="1.8"
-                height="1"
+      <p class="descricao" id="detalhe-progresso">
+        A preparar a experiência de realidade aumentada.
+      </p>
 
-                material="
-                    shader: flat;
-                    transparent: true;
-                    depthWrite: false;"
+      <div
+        class="barra-progresso"
+        id="barra-acessivel"
+        role="progressbar"
+        aria-label="Carregamento"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="0">
 
-                visible="false">
-            </a-plane>
+        <div id="barra-preenchimento"></div>
 
-        </a-entity>
+      </div>
 
-    </a-scene>
+      <p class="nota">
+        Um universo ilustrado está quase a aparecer! ✧
+      </p>
+
+    </div>
+
+  </section>
+
+  <!-- ECRÃ DE ERRO -->
+  <section class="ecra" id="ecra-erro">
+
+    <div class="conteudo">
+
+      <div class="selo">
+        ✧ OPS! ✧
+      </div>
+
+      <div class="icone-erro" aria-hidden="true">
+        !
+      </div>
+
+      <h2>Ocorreu um erro</h2>
+
+      <p class="descricao" id="detalhe-erro">
+        Não foi possível preparar a experiência AR.
+        Verifica a ligação à Internet e tenta novamente.
+      </p>
+
+      <button
+        class="botao botao-principal"
+        id="tentar-novamente"
+        type="button">
+        Tentar novamente
+      </button>
+
+      <a class="link-discreto" href="index.html">
+        Voltar ao portefólio
+      </a>
+
+    </div>
+
+  </section>
+
+  <!-- SCANNER AR -->
+  <section
+    class="ecra"
+    id="ecra-scanner"
+    aria-label="Scanner de realidade aumentada">
+
+    <div id="cena-container"></div>
+
+    <div class="interface-scanner">
+
+      <a href="index.html" class="voltar-scanner">
+        ← Voltar
+      </a>
+
+      <div
+        class="mensagem-scanner"
+        id="mensagem"
+        role="status">
+        Aponta a câmara para a estrela ✦
+      </div>
+
+      <button
+        class="som-scanner"
+        id="ativar-som"
+        type="button">
+        ♫ Ativar som
+      </button>
+
+    </div>
+
+    <!-- CONTAGEM DE 3 SEGUNDOS -->
+    <div class="contagem" id="contagem" hidden>
+      3
+    </div>
+
+  </section>
+
+  <!-- MÚSICA HTML5 -->
+  <audio
+    id="musica-ar"
+    preload="auto"
+    playsinline>
+
+    <source
+      src="animacao-portfolio/musica/musica do portefolio.mp3"
+      type="audio/mpeg">
+
+    O teu navegador não suporta áudio HTML5.
+
+  </audio>
+
+</main>
 
 </body>
 </html>
