@@ -1,166 +1,298 @@
 
 <!DOCTYPE html>
 <html lang="pt-PT">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#203A58">
+    <meta charset="UTF-8">
 
-  <title>Experiência AR | Eva Guedelha</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, viewport-fit=cover"
+    >
 
-  <link rel="stylesheet" href="./ar.css?v=21">
-  <script src="./ar.js?v=21" defer></script>
+    <meta name="theme-color" content="#203A58">
+
+    <title>Experiência AR | Eva Guedelha</title>
+
+    <!-- CSS DA EXPERIÊNCIA AR -->
+    <link rel="stylesheet" href="./ar.css?v=33">
+
+    <!-- JAVASCRIPT DA EXPERIÊNCIA AR -->
+    <script src="./ar.js?v=33" defer></script>
+
 </head>
 
 <body>
+
 <main class="aplicacao">
 
-  <!-- ECRÃ INICIAL -->
-  <section id="inicio" class="ecra ativo">
+    <!-- =====================================
+         1. ECRÃ INICIAL
+    ====================================== -->
 
-    <div class="decoracao" aria-hidden="true">
-      <span>✦</span>
-      <span>✧</span>
-      <span>✦</span>
-      <span>✧</span>
-    </div>
+    <section id="inicio" class="ecra ativo">
 
-    <div class="conteudo">
+        <!-- ESTRELAS DECORATIVAS -->
 
-      <p class="etiqueta">✦ EVA GUEDELHA ✦</p>
+        <div class="decoracao" aria-hidden="true">
 
-      <h1>Experiência AR</h1>
+            <span>✦</span>
+            <span>✧</span>
+            <span>✦</span>
+            <span>✧</span>
 
-      <p class="descricao">
-        Descobre as minhas ilustrações
-        de uma forma diferente.
-      </p>
-
-      <button id="botao-iniciar"
-              class="botao-principal"
-              type="button">
-        Iniciar experiência
-      </button>
-
-      <p class="nota">
-        Permite o acesso à câmara do teu dispositivo.
-      </p>
-
-      <a href="./index.html" class="link-voltar">
-        Voltar ao portefólio
-      </a>
-
-    </div>
-  </section>
-
-  <!-- ECRÃ DE CARREGAMENTO -->
-  <section id="carregamento"
-           class="ecra"
-           aria-live="polite">
-
-    <div class="conteudo">
-
-      <p class="etiqueta">✦ A PREPARAR ✦</p>
-
-      <div id="circulo-progresso"
-           class="circulo-progresso"
-           style="--valor:0">
-
-        <div class="circulo-interior">
-          <span id="percentagem">0%</span>
         </div>
 
-      </div>
+        <!-- CONTEÚDO -->
 
-      <h2>A preparar a experiência AR</h2>
+        <div class="conteudo">
 
-      <div id="barra-progresso"
-           class="barra-progresso"
-           role="progressbar"
-           aria-label="Carregamento"
-           aria-valuemin="0"
-           aria-valuemax="100"
-           aria-valuenow="0">
+            <p class="etiqueta">
+                ✦ EVA GUEDELHA ✦
+            </p>
 
-        <div id="barra-valor"></div>
+            <h1>
+                Experiência AR
+            </h1>
 
-      </div>
+            <p class="descricao">
+                Descobre as minhas ilustrações
+                de uma forma diferente.
+            </p>
 
-      <p id="texto-carregamento" class="nota">
-        A preparar o reconhecimento...
-      </p>
+            <button
+                id="botao-iniciar"
+                class="botao-principal"
+                type="button"
+            >
+                Iniciar experiência
+            </button>
 
-    </div>
-  </section>
+            <p class="nota">
+                Permite o acesso à câmara
+                do teu dispositivo.
+            </p>
 
-  <!-- ECRÃ DE ERRO -->
-  <section id="erro" class="ecra">
+            <a
+                href="./index.html"
+                class="link-voltar"
+            >
+                Voltar ao portefólio
+            </a>
 
-    <div class="conteudo">
+        </div>
 
-      <div class="simbolo-erro" aria-hidden="true">
-        !
-      </div>
+    </section>
 
-      <h2>Ocorreu um erro</h2>
 
-      <p id="texto-erro" class="descricao">
-        Não foi possível carregar a experiência
-        de realidade aumentada.
-      </p>
+    <!-- =====================================
+         2. ECRÃ DE CARREGAMENTO
+    ====================================== -->
 
-      <button id="botao-tentar"
-              class="botao-principal"
-              type="button">
-        Tentar novamente
-      </button>
+    <section
+        id="carregamento"
+        class="ecra"
+        aria-live="polite"
+    >
 
-      <a href="./index.html" class="link-voltar">
-        Voltar ao portefólio
-      </a>
+        <div class="conteudo">
 
-    </div>
-  </section>
+            <p class="etiqueta">
+                ✦ A PREPARAR ✦
+            </p>
 
-  <!-- SCANNER -->
-  <section id="scanner" class="ecra ecra-scanner">
+            <!-- PROGRESSO CIRCULAR -->
 
-    <div id="area-ar"></div>
+            <div
+                id="circulo-progresso"
+                class="circulo-progresso"
+                style="--valor:0"
+            >
 
-    <div class="interface-scanner">
+                <div class="circulo-interior">
 
-      <a class="botao-voltar" href="./index.html">
-        ← Voltar
-      </a>
+                    <span id="percentagem">
+                        0%
+                    </span>
 
-      <p id="mensagem-scanner" role="status">
-        Aponta a câmara para a estrela ✦
-      </p>
+                </div>
 
-      <button id="botao-som"
-              type="button"
-              hidden>
-        ♫ Ativar som
-      </button>
+            </div>
 
-    </div>
+            <h2>
+                A preparar a experiência AR
+            </h2>
 
-    <div id="contagem" class="contagem" hidden>
-      3
-    </div>
+            <!-- BARRA DE PROGRESSO -->
 
-  </section>
+            <div
+                id="barra-progresso"
+                class="barra-progresso"
+                role="progressbar"
+                aria-label="Carregamento da experiência AR"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="0"
+            >
 
-  <!-- MÚSICA HTML5 -->
-  <audio id="musica-ar" preload="auto" playsinline>
-    <source
-      src="./animacao-portfolio/musica/musica do portefolio.mp3"
-      type="audio/mpeg">
+                <div id="barra-valor"></div>
 
-    O navegador não suporta áudio HTML5.
-  </audio>
+            </div>
+
+            <!-- MENSAGEM DE CARREGAMENTO -->
+
+            <p
+                id="texto-carregamento"
+                class="nota"
+            >
+                A preparar o reconhecimento...
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================
+         3. ECRÃ DE ERRO
+    ====================================== -->
+
+    <section id="erro" class="ecra">
+
+        <div class="conteudo">
+
+            <!-- SÍMBOLO DE ERRO -->
+
+            <div
+                class="simbolo-erro"
+                aria-hidden="true"
+            >
+                !
+            </div>
+
+            <h2>
+                Ocorreu um erro
+            </h2>
+
+            <!-- MENSAGEM DE ERRO -->
+
+            <p
+                id="texto-erro"
+                class="descricao"
+            >
+                Não foi possível carregar
+                a experiência de realidade aumentada.
+
+                Verifica a ligação à Internet
+                e as permissões da câmara.
+            </p>
+
+            <!-- TENTAR NOVAMENTE -->
+
+            <button
+                id="botao-tentar"
+                class="botao-principal"
+                type="button"
+            >
+                Tentar novamente
+            </button>
+
+            <!-- VOLTAR AO PORTEFÓLIO -->
+
+            <a
+                href="./index.html"
+                class="link-voltar"
+            >
+                Voltar ao portefólio
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================
+         4. SCANNER DE REALIDADE AUMENTADA
+    ====================================== -->
+
+    <section
+        id="scanner"
+        class="ecra ecra-scanner"
+    >
+
+        <!-- CENA MINDAR -->
+        <!-- CRIADA PELO JAVASCRIPT -->
+
+        <div id="area-ar"></div>
+
+        <!-- INTERFACE SOBRE A CÂMARA -->
+
+        <div class="interface-scanner">
+
+            <!-- BOTÃO VOLTAR -->
+
+            <a
+                class="botao-voltar"
+                href="./index.html"
+            >
+                ← Voltar
+            </a>
+
+            <!-- MENSAGENS DO SCANNER -->
+
+            <p
+                id="mensagem-scanner"
+                role="status"
+            >
+                Aponta a câmara para a estrela ✦
+            </p>
+
+            <!-- ATIVAR SOM -->
+
+            <button
+                id="botao-som"
+                type="button"
+                hidden
+            >
+                ♫ Ativar som
+            </button>
+
+        </div>
+
+        <!-- CONTAGEM ANTES DA ANIMAÇÃO -->
+
+        <div
+            id="contagem"
+            class="contagem"
+            hidden
+        >
+            3
+        </div>
+
+    </section>
+
+
+    <!-- =====================================
+         5. MÚSICA DA EXPERIÊNCIA AR
+    ====================================== -->
+
+    <audio
+        id="musica-ar"
+        preload="auto"
+        playsinline
+    >
+
+        <source
+            src="./animacao-portfolio/musica/musica do portefolio.mp3"
+            type="audio/mpeg"
+        >
+
+        O teu navegador não suporta áudio HTML5.
+
+    </audio>
 
 </main>
+
 </body>
+
 </html>
