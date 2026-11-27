@@ -9,14 +9,14 @@
 
   <title>Experiência AR | Eva Guedelha</title>
 
-  <link rel="stylesheet" href="./ar.css?v=20">
-  <script src="./ar.js?v=20" defer></script>
+  <link rel="stylesheet" href="./ar.css?v=21">
+  <script src="./ar.js?v=21" defer></script>
 </head>
 
 <body>
 <main class="aplicacao">
 
-  <!-- 1. ECRÃ INICIAL -->
+  <!-- ECRÃ INICIAL -->
   <section id="inicio" class="ecra ativo">
 
     <div class="decoracao" aria-hidden="true">
@@ -47,23 +47,24 @@
         Permite o acesso à câmara do teu dispositivo.
       </p>
 
-      <a class="link-voltar" href="./index.html">
+      <a href="./index.html" class="link-voltar">
         Voltar ao portefólio
       </a>
 
     </div>
   </section>
 
-  <!-- 2. ECRÃ DE CARREGAMENTO -->
-  <section id="carregamento" class="ecra"
+  <!-- ECRÃ DE CARREGAMENTO -->
+  <section id="carregamento"
+           class="ecra"
            aria-live="polite">
 
     <div class="conteudo">
 
       <p class="etiqueta">✦ A PREPARAR ✦</p>
 
-      <div class="circulo-progresso"
-           id="circulo-progresso"
+      <div id="circulo-progresso"
+           class="circulo-progresso"
            style="--valor:0">
 
         <div class="circulo-interior">
@@ -74,8 +75,8 @@
 
       <h2>A preparar a experiência AR</h2>
 
-      <div class="barra-progresso"
-           id="barra-progresso"
+      <div id="barra-progresso"
+           class="barra-progresso"
            role="progressbar"
            aria-label="Carregamento"
            aria-valuemin="0"
@@ -83,6 +84,7 @@
            aria-valuenow="0">
 
         <div id="barra-valor"></div>
+
       </div>
 
       <p id="texto-carregamento" class="nota">
@@ -92,7 +94,7 @@
     </div>
   </section>
 
-  <!-- 3. ECRÃ DE ERRO -->
+  <!-- ECRÃ DE ERRO -->
   <section id="erro" class="ecra">
 
     <div class="conteudo">
@@ -114,14 +116,14 @@
         Tentar novamente
       </button>
 
-      <a class="link-voltar" href="./index.html">
+      <a href="./index.html" class="link-voltar">
         Voltar ao portefólio
       </a>
 
     </div>
   </section>
 
-  <!-- 4. SCANNER AR -->
+  <!-- SCANNER -->
   <section id="scanner" class="ecra ecra-scanner">
 
     <div id="area-ar"></div>
@@ -132,7 +134,7 @@
         ← Voltar
       </a>
 
-      <p id="mensagem-scanner">
+      <p id="mensagem-scanner" role="status">
         Aponta a câmara para a estrela ✦
       </p>
 
@@ -152,13 +154,11 @@
 
   <!-- MÚSICA HTML5 -->
   <audio id="musica-ar" preload="auto" playsinline>
-
     <source
       src="./animacao-portfolio/musica/musica do portefolio.mp3"
       type="audio/mpeg">
 
     O navegador não suporta áudio HTML5.
-
   </audio>
 
 </main>

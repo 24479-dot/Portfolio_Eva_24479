@@ -2,30 +2,63 @@
 document.addEventListener("DOMContentLoaded", () => {
   "use strict";
 
-  // CONFIGURAÇÃO
+  // =====================================
+  // CONFIGURAÇÕES
+  // =====================================
+
   const PASTA =
     "./animacao-portfolio/imagens animadas/";
+
   const PREFIXO = "animaçao_";
   const TARGET = "./target/target.mind";
 
+  // TEMPOS DA EXPERIÊNCIA
   const INTRO = 3000;
   const DURACAO = 10000;
   const FINAL = 3000;
+
+  // MICROANIMAÇÕES
+  const ENTRADA = 750;
+  const SAIDA = 850;
+
+  // FUNDO ATRÁS DAS ILUSTRAÇÕES
+  const COR_FUNDO = "#f4f8fb";
+  const RAIO_CANTOS = 55;
+  const MARGEM = 35;
+
+  // TAMANHO DA COMPOSIÇÃO AR
+  const LARGURA_AR = 1.9;
+
   const LIMITE = 300;
 
   const $ = id => document.getElementById(id);
 
-  const inicio = $("inicio");
-  const carregamento = $("carregamento");
-  const erroEcra = $("erro");
-  const scanner = $("scanner");
+  // =====================================
+  // ELEMENTOS
+  // =====================================
+
+  const ecraInicio = $("inicio");
+  const ecraCarregamento = $("carregamento");
+  const ecraErro = $("erro");
+  const ecraScanner = $("scanner");
 
   const audio = $("musica-ar");
   const botaoSom = $("botao-som");
   const mensagem = $("mensagem-scanner");
   const contagem = $("contagem");
 
-  let cena, alvo, plano, textura, canvas, contexto;
+  let cena;
+  let alvo;
+  let plano;
+  let material;
+  let textura;
+  let canvas;
+  let contexto;
+
+  // =====================================
+  // ESTADO
+  // =====================================
+
   let imagens = [];
 
   let pronto = false;
@@ -33,113 +66,174 @@ document.addEventListener("DOMContentLoaded", () => {
   let emAnimacao = false;
   let emFinalMusical = false;
   let executado = false;
+
   let aDesenhar = false;
+  let ultimoFrame = -1;
 
   let inicioCiclo = 0;
   let inicioAnimacao = 0;
-  let ultimoFrame = -1;
   let sessao = 0;
 
   let timerIntro = null;
   let timerFinal = null;
-  let timerLimite = null;
   let pedidoFrame = null;
 
+  // =====================================
   // ECRÃS
+  // =====================================
 
   function mostrar(ecra) {
-    [inicio, carregamento, erroEcra, scanner]
-      .forEach(item => {
-        item.classList.toggle(
-          "ativo",
-          item === ecra
-        );
-      });
+
+    [
+      ecraInicio,
+      ecraCarregamento,
+      ecraErro,
+      ecraScanner
+    ].forEach(elemento => {
+
+      elemento.classList.toggle(
+        "ativo",
+        elemento === ecra
+      );
+
+    });
+
+    if (ecra === ecraScanner) {
+      ecraScanner.classList.remove("preparar");
+    }
+
   }
 
+  // =====================================
   // PROGRESSO
+  // =====================================
 
   function progresso(valor, descricao) {
+
     const n = Math.max(
       0,
       Math.min(100, Math.round(valor))
     );
 
-    $("percentagem").textContent = n + "%";
+    $("percentagem").textContent =
+      n + "%";
 
     $("circulo-progresso").style.setProperty(
-      "--valor", n
+      "--valor",
+      n
     );
 
-    $("barra-valor").style.width = n + "%";
+    $("barra-valor").style.width =
+      n + "%";
 
     $("barra-progresso").setAttribute(
-      "aria-valuenow", String(n)
+      "aria-valuenow",
+      String(n)
     );
 
     $("texto-carregamento").textContent =
       descricao;
+
   }
 
-  // ECRÃ DE ERRO
+  // =====================================
+  // ERROS
+  // =====================================
 
   function mostrarErro(texto, detalhe) {
-    console.error("Erro na experiência AR:", detalhe);
+
+    console.error(
+      "Erro na experiência AR:",
+      detalhe || texto
+    );
 
     cancelar();
 
     $("texto-erro").textContent = texto;
-    mostrar(erroEcra);
+
+    mostrar(ecraErro);
+
   }
 
+  // =====================================
   // CARREGAR BIBLIOTECAS
+  // =====================================
 
   function carregarScript(url) {
+
     return new Promise((resolve, reject) => {
+
       const script = document.createElement("script");
+
       script.src = url;
 
       script.onload = resolve;
+
       script.onerror = () => reject(
-        new Error("Falha ao carregar " + url)
+        new Error(
+          "Não foi possível carregar " + url
+        )
       );
 
       document.head.appendChild(script);
+
     });
+
   }
 
   async function carregarBibliotecas() {
-    progresso(4, "A preparar o reconhecimento...");
+
+    progresso(
+      4,
+      "A preparar o reconhecimento..."
+    );
 
     if (!window.AFRAME) {
+
       await carregarScript(
         "https://aframe.io/releases/1.5.0/aframe.min.js"
       );
+
     }
 
-    progresso(10, "A iniciar a realidade aumentada...");
+    progresso(
+      10,
+      "A iniciar a realidade aumentada..."
+    );
 
     if (!AFRAME.components["mindar-image"]) {
+
       await carregarScript(
         "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"
       );
+
     }
 
     if (!AFRAME.components["mindar-image"]) {
-      throw new Error("MindAR não ficou disponível.");
+
+      throw new Error(
+        "A biblioteca MindAR não está disponível."
+      );
+
     }
+
   }
 
-  // NOMES DOS PNG
+  // =====================================
+  // CAMINHOS DOS PNG
+  // =====================================
 
   function caminho(i) {
-    return PASTA + PREFIXO +
-      String(i).padStart(5, "0") + ".png";
+
+    return PASTA +
+      PREFIXO +
+      String(i).padStart(5, "0") +
+      ".png";
+
   }
 
-  // VERIFICAR SE EXISTE UM PNG
-
   async function existe(i) {
+
     const url = caminho(i);
 
     let resposta = await fetch(url, {
@@ -148,9 +242,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     if (resposta.status === 405) {
+
       resposta = await fetch(url, {
         cache: "no-store"
       });
+
     }
 
     if (resposta.status === 404) {
@@ -158,21 +254,32 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (!resposta.ok) {
+
       throw new Error(
-        "Erro HTTP " + resposta.status + ": " + url
+        "Erro HTTP " +
+        resposta.status +
+        ": " +
+        url
       );
+
     }
 
     return true;
+
   }
 
-  // DESCOBRIR QUANTOS FOTOGRAMAS EXISTEM
+  // =====================================
+  // DETETAR NÚMERO DE FOTOGRAMAS
+  // =====================================
 
   async function contarImagens() {
+
     if (!(await existe(0))) {
+
       throw new Error(
         "Não encontrei " + caminho(0)
       );
+
     }
 
     let inferior = 0;
@@ -182,13 +289,19 @@ document.addEventListener("DOMContentLoaded", () => {
       superior < LIMITE &&
       await existe(superior)
     ) {
+
       inferior = superior;
       superior *= 2;
+
     }
 
-    superior = Math.min(superior, LIMITE);
+    superior = Math.min(
+      superior,
+      LIMITE
+    );
 
     while (superior - inferior > 1) {
+
       const meio = Math.floor(
         (inferior + superior) / 2
       );
@@ -198,24 +311,34 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         superior = meio;
       }
+
     }
 
     if (
       superior === LIMITE &&
       await existe(LIMITE - 1)
     ) {
+
       throw new Error(
-        "A sequência excede o limite de imagens."
+        "A animação excede o limite de imagens."
       );
+
     }
 
     return superior;
+
   }
 
-  // CARREGAR FOTOGRAMAS
+  // =====================================
+  // CARREGAR IMAGENS
+  // =====================================
 
   async function carregarImagens() {
-    progresso(15, "A procurar as ilustrações...");
+
+    progresso(
+      15,
+      "A procurar as ilustrações..."
+    );
 
     const total = await contarImagens();
 
@@ -225,28 +348,39 @@ document.addEventListener("DOMContentLoaded", () => {
     let carregadas = 0;
 
     async function trabalhador() {
+
       while (seguinte < total) {
+
         const i = seguinte++;
 
-        const resposta = await fetch(caminho(i), {
-          cache: "no-store"
-        });
+        const resposta = await fetch(
+          caminho(i),
+          { cache: "no-store" }
+        );
 
         if (!resposta.ok) {
+
           throw new Error(
-            "Não encontrei " + caminho(i)
+            "Não foi possível carregar " +
+            caminho(i)
           );
+
         }
 
         imagens[i] = await resposta.blob();
+
         carregadas++;
 
         progresso(
           15 + (carregadas / total) * 70,
           "A carregar ilustrações: " +
-          carregadas + " de " + total
+          carregadas +
+          " de " +
+          total
         );
+
       }
+
     }
 
     await Promise.all(
@@ -256,12 +390,19 @@ document.addEventListener("DOMContentLoaded", () => {
       )
     );
 
-    console.log("PNG carregados:", total);
+    console.log(
+      "Fotogramas carregados:",
+      total
+    );
+
   }
 
+  // =====================================
   // CRIAR CENA MINDAR
+  // =====================================
 
   function criarCena() {
+
     $("area-ar").innerHTML = `
       <a-scene
         embedded
@@ -288,12 +429,14 @@ document.addEventListener("DOMContentLoaded", () => {
           <a-plane
             id="animacao-ar"
             position="0 0 0.05"
-            width="1.8"
-            height="1"
+            width="${LARGURA_AR}"
+            height="1.8"
             material="
               shader: flat;
               transparent: true;
-              depthWrite: false"
+              side: double;
+              depthWrite: false;
+              opacity: 0"
             visible="false">
           </a-plane>
 
@@ -305,295 +448,740 @@ document.addEventListener("DOMContentLoaded", () => {
     alvo = $("alvo-ar");
     plano = $("animacao-ar");
 
+    // DETETAR PROBLEMAS NO SCANNER
+
     cena.addEventListener("arError", () => {
+
       mostrarErro(
-        "Não foi possível iniciar a câmara ou " +
-        "carregar o marcador AR. Verifica as " +
-        "permissões e tenta novamente.",
-        new Error("Erro de inicialização MindAR")
+        "Não foi possível iniciar a câmara " +
+        "ou carregar o marcador AR. " +
+        "Verifica as permissões e tenta novamente."
       );
+
     });
 
-    alvo.addEventListener("targetFound", () => {
-      reconhecido = true;
-      prepararInicio();
-    });
+    // ESTRELA RECONHECIDA
 
-    alvo.addEventListener("targetLost", () => {
-      reconhecido = false;
+    alvo.addEventListener(
+      "targetFound",
+      () => {
 
-      if (!emFinalMusical) {
-        cancelar();
-      }
-    });
-  }
+        reconhecido = true;
 
-  // AGUARDAR CENA
-
-  function esperarCena() {
-    return new Promise(resolve => {
-      if (cena.hasLoaded) {
-        resolve();
-      } else {
-        cena.addEventListener(
-          "loaded", resolve, { once: true }
-        );
-      }
-    });
-  }
-
-  // PREPARAR A TEXTURA DA ANIMAÇÃO
-
-  async function prepararTextura() {
-    await esperarCena();
-
-    let mesh = plano.getObject3D("mesh");
-
-    if (!mesh) {
-      mesh = await new Promise((resolve, reject) => {
-        const limite = performance.now() + 10000;
-
-        function verificar() {
-          const resultado = plano.getObject3D("mesh");
-
-          if (resultado) {
-            resolve(resultado);
-          } else if (performance.now() > limite) {
-            reject(new Error("Plano 3D indisponível."));
-          } else {
-            requestAnimationFrame(verificar);
-          }
+        if (pronto) {
+          prepararInicio();
         }
 
-        verificar();
-      });
-    }
+      }
+    );
+
+    // ESTRELA DEIXOU DE SER RECONHECIDA
+
+    alvo.addEventListener(
+      "targetLost",
+      () => {
+
+        reconhecido = false;
+
+        if (!emFinalMusical) {
+          cancelar();
+        }
+
+      }
+    );
+
+  }
+
+  // =====================================
+  // ESPERAR PELA CENA A-FRAME
+  // =====================================
+
+  function esperarCena() {
+
+    return new Promise(resolve => {
+
+      if (cena.hasLoaded) {
+        resolve();
+        return;
+      }
+
+      cena.addEventListener(
+        "loaded",
+        resolve,
+        { once: true }
+      );
+
+    });
+
+  }
+
+  function esperarMalha() {
+
+    return new Promise((resolve, reject) => {
+
+      const limite = performance.now() + 10000;
+
+      function verificar() {
+
+        const mesh = plano.getObject3D("mesh");
+
+        if (mesh) {
+          resolve(mesh);
+          return;
+        }
+
+        if (performance.now() > limite) {
+
+          reject(
+            new Error(
+              "O plano AR não ficou disponível."
+            )
+          );
+
+          return;
+        }
+
+        requestAnimationFrame(verificar);
+
+      }
+
+      verificar();
+
+    });
+
+  }
+
+  // =====================================
+  // DESENHAR RETÂNGULO ARREDONDADO
+  // =====================================
+
+  function retanguloArredondado(
+    x,
+    y,
+    largura,
+    altura,
+    raio
+  ) {
+
+    const r = Math.min(
+      raio,
+      largura / 2,
+      altura / 2
+    );
+
+    contexto.beginPath();
+
+    contexto.moveTo(x + r, y);
+
+    contexto.lineTo(
+      x + largura - r,
+      y
+    );
+
+    contexto.quadraticCurveTo(
+      x + largura,
+      y,
+      x + largura,
+      y + r
+    );
+
+    contexto.lineTo(
+      x + largura,
+      y + altura - r
+    );
+
+    contexto.quadraticCurveTo(
+      x + largura,
+      y + altura,
+      x + largura - r,
+      y + altura
+    );
+
+    contexto.lineTo(
+      x + r,
+      y + altura
+    );
+
+    contexto.quadraticCurveTo(
+      x,
+      y + altura,
+      x,
+      y + altura - r
+    );
+
+    contexto.lineTo(
+      x,
+      y + r
+    );
+
+    contexto.quadraticCurveTo(
+      x,
+      y,
+      x + r,
+      y
+    );
+
+    contexto.closePath();
+
+  }
+
+  // =====================================
+  // FUNDO + ILUSTRAÇÕES
+  // NA MESMA TEXTURA
+  // =====================================
+
+  function desenharComposicao(imagem) {
+
+    const w = canvas.width;
+    const h = canvas.height;
+
+    contexto.clearRect(
+      0,
+      0,
+      w,
+      h
+    );
+
+    contexto.save();
+
+    // CRIAR FORMA COM CANTOS REDONDOS
+
+    retanguloArredondado(
+      2,
+      2,
+      w - 4,
+      h - 4,
+      RAIO_CANTOS
+    );
+
+    contexto.clip();
+
+    // FUNDO OPACO QUE ESCONDE A ESTRELA
+
+    contexto.fillStyle = COR_FUNDO;
+
+    contexto.fillRect(
+      0,
+      0,
+      w,
+      h
+    );
+
+    // CENTRAR AS ILUSTRAÇÕES
+    // SEM DEFORMAR AS IMAGENS
+
+    const disponivelW =
+      w - MARGEM * 2;
+
+    const disponivelH =
+      h - MARGEM * 2;
+
+    const escala = Math.min(
+      disponivelW / imagem.width,
+      disponivelH / imagem.height
+    );
+
+    const desenhoW =
+      imagem.width * escala;
+
+    const desenhoH =
+      imagem.height * escala;
+
+    const x =
+      (w - desenhoW) / 2;
+
+    const y =
+      (h - desenhoH) / 2;
+
+    contexto.drawImage(
+      imagem,
+      x,
+      y,
+      desenhoW,
+      desenhoH
+    );
+
+    contexto.restore();
+
+    textura.needsUpdate = true;
+
+  }
+
+  // =====================================
+  // PREPARAR TEXTURA E FUNDO
+  // =====================================
+
+  async function prepararTextura() {
+
+    await esperarCena();
+
+    const mesh = await esperarMalha();
 
     const primeira = await createImageBitmap(
       imagens[0]
     );
 
-    const proporcao =
+    const proporcaoOriginal =
       primeira.height / primeira.width;
 
-    canvas = document.createElement("canvas");
-    canvas.width = Math.min(primeira.width, 1024);
-    canvas.height = Math.max(
-      1, Math.round(canvas.width * proporcao)
+    // ALTURA MÍNIMA PARA COBRIR A ESTRELA
+
+    const proporcao = Math.max(
+      0.90,
+      proporcaoOriginal
     );
 
-    contexto = canvas.getContext("2d", {
-      alpha: true
-    });
+    canvas = document.createElement("canvas");
+
+    canvas.width = 1000;
+
+    canvas.height = Math.round(
+      1000 * proporcao
+    );
+
+    contexto = canvas.getContext(
+      "2d",
+      { alpha: true }
+    );
+
+    plano.setAttribute(
+      "width",
+      LARGURA_AR
+    );
+
+    plano.setAttribute(
+      "height",
+      LARGURA_AR * proporcao
+    );
+
+    textura = new AFRAME.THREE.CanvasTexture(
+      canvas
+    );
+
+    if (AFRAME.THREE.SRGBColorSpace) {
+
+      textura.colorSpace =
+        AFRAME.THREE.SRGBColorSpace;
+
+    }
+
+    material = mesh.material;
+
+    material.map = textura;
+    material.transparent = true;
+    material.depthWrite = false;
+    material.opacity = 0;
+    material.needsUpdate = true;
+
+    // DESENHAR PRIMEIRO FOTOGRAMA
+    // ANTES DA ANIMAÇÃO COMEÇAR
+
+    desenharComposicao(primeira);
 
     primeira.close();
 
-    plano.setAttribute("width", 1.8);
-    plano.setAttribute("height", 1.8 * proporcao);
+    plano.object3D.scale.set(
+      0.94,
+      0.94,
+      1
+    );
 
-    textura = new AFRAME.THREE.CanvasTexture(canvas);
-
-    if (AFRAME.THREE.SRGBColorSpace) {
-      textura.colorSpace =
-        AFRAME.THREE.SRGBColorSpace;
-    }
-
-    mesh.material.map = textura;
-    mesh.material.transparent = true;
-    mesh.material.depthWrite = false;
-    mesh.material.needsUpdate = true;
   }
 
+  // =====================================
+  // MICROANIMAÇÃO DE OPACIDADE
+  // E CRESCIMENTO
+  // =====================================
+
+  function suavizar(valor) {
+
+    const t = Math.max(
+      0,
+      Math.min(1, valor)
+    );
+
+    return t * t * (3 - 2 * t);
+
+  }
+
+  function atualizarTransicao(decorrido) {
+
+    let opacidade = 1;
+
+    let escala = 1;
+
+    // ENTRADA: 0 A 750 MS
+
+    if (decorrido < ENTRADA) {
+
+      const t = suavizar(
+        decorrido / ENTRADA
+      );
+
+      opacidade = t;
+
+      escala =
+        0.94 + 0.06 * t;
+
+    }
+
+    // SAÍDA: ÚLTIMOS 850 MS
+
+    else if (
+      decorrido > DURACAO - SAIDA
+    ) {
+
+      const restante =
+        DURACAO - decorrido;
+
+      const t = suavizar(
+        restante / SAIDA
+      );
+
+      opacidade = t;
+
+      escala =
+        0.96 + 0.04 * t;
+
+    }
+
+    material.opacity = opacidade;
+
+    plano.object3D.scale.set(
+      escala,
+      escala,
+      1
+    );
+
+  }
+
+  // =====================================
   // MÚSICA
+  // =====================================
 
   function pararMusica() {
+
     audio.pause();
 
     try {
       audio.currentTime = 0;
-    } catch (e) {
-      console.warn(e);
+    } catch (erro) {
+      console.warn(erro);
     }
+
   }
 
   async function tocarMusica() {
+
     try {
+
       audio.currentTime = 0;
+
       await audio.play();
+
       botaoSom.hidden = true;
-    } catch (e) {
+
+    } catch (erro) {
+
       botaoSom.hidden = false;
-      console.warn("Som bloqueado:", e);
+
+      console.warn(
+        "O navegador bloqueou o áudio.",
+        erro
+      );
+
     }
+
   }
 
   function autorizarSom() {
-    // Executado no clique inicial do utilizador
+
     const tentativa = audio.play();
 
-    if (tentativa) {
+    if (
+      tentativa &&
+      typeof tentativa.then === "function"
+    ) {
+
       tentativa.then(() => {
+
         audio.pause();
         audio.currentTime = 0;
+
       }).catch(() => {
+
         botaoSom.hidden = false;
+
       });
+
     }
+
   }
 
-  // CANCELAR A EXPERIÊNCIA
+  // =====================================
+  // CANCELAR
+  // =====================================
 
   function cancelar() {
+
     clearTimeout(timerIntro);
     clearTimeout(timerFinal);
-    clearTimeout(timerLimite);
 
     timerIntro = null;
     timerFinal = null;
-    timerLimite = null;
 
     if (pedidoFrame !== null) {
+
       cancelAnimationFrame(pedidoFrame);
+
       pedidoFrame = null;
+
     }
 
     sessao++;
+
     emAnimacao = false;
     emFinalMusical = false;
     executado = false;
 
     ultimoFrame = -1;
+
     contagem.hidden = true;
 
     if (plano) {
-      plano.setAttribute("visible", false);
+
+      plano.setAttribute(
+        "visible",
+        false
+      );
+
+      plano.object3D.scale.set(
+        0.94,
+        0.94,
+        1
+      );
+
+    }
+
+    if (material) {
+      material.opacity = 0;
     }
 
     pararMusica();
 
     if (pronto) {
+
       mensagem.textContent =
         "Aponta a câmara para a estrela ✦";
+
     }
+
   }
 
+  // =====================================
   // DESENHAR FOTOGRAMA
+  // =====================================
 
   async function desenhar(i, id) {
+
     aDesenhar = true;
-    let imagem;
+
+    let imagem = null;
 
     try {
-      imagem = await createImageBitmap(imagens[i]);
 
-      if (!emAnimacao || id !== sessao) {
+      imagem = await createImageBitmap(
+        imagens[i]
+      );
+
+      if (
+        id !== sessao ||
+        !emAnimacao
+      ) {
         return;
       }
 
-      contexto.clearRect(
-        0, 0, canvas.width, canvas.height
+      // DESENHA O FUNDO E AS ILUSTRAÇÕES
+      // EM CONJUNTO
+
+      desenharComposicao(imagem);
+
+    } catch (erro) {
+
+      console.error(
+        "Erro no fotograma " + i,
+        erro
       );
 
-      contexto.drawImage(
-        imagem, 0, 0, canvas.width, canvas.height
-      );
-
-      textura.needsUpdate = true;
-
-    } catch (e) {
-      console.error("Erro no fotograma:", i, e);
     } finally {
-      if (imagem) imagem.close();
+
+      if (imagem) {
+        imagem.close();
+      }
+
       aDesenhar = false;
+
     }
+
   }
 
-  // ANIMAÇÃO DURANTE 10 SEGUNDOS
+  // =====================================
+  // ANIMAÇÃO DE 10 SEGUNDOS
+  // =====================================
 
   function atualizar(id) {
-    if (!emAnimacao || id !== sessao) return;
+
+    if (
+      !emAnimacao ||
+      id !== sessao
+    ) {
+      return;
+    }
 
     const decorrido =
       performance.now() - inicioAnimacao;
 
     if (decorrido >= DURACAO) {
+
       terminarAnimacao();
       return;
+
     }
+
+    // OPACIDADE E ESCALA ACOMPANHAM
+    // O TEMPO DA ANIMAÇÃO
+
+    atualizarTransicao(decorrido);
 
     const indice = Math.min(
       imagens.length - 1,
+
       Math.floor(
-        decorrido / DURACAO * imagens.length
+        (decorrido / DURACAO) *
+        imagens.length
       )
     );
 
-    if (!aDesenhar && indice !== ultimoFrame) {
+    if (
+      !aDesenhar &&
+      indice !== ultimoFrame
+    ) {
+
       ultimoFrame = indice;
+
       desenhar(indice, id);
+
     }
 
     pedidoFrame = requestAnimationFrame(
       () => atualizar(id)
     );
+
   }
 
+  // =====================================
+  // COMEÇAR A ANIMAÇÃO
+  // =====================================
+
   function comecarAnimacao() {
+
     timerIntro = null;
 
     if (!reconhecido || !pronto) {
+
       cancelar();
       return;
+
     }
 
     contagem.hidden = true;
+
     emAnimacao = true;
 
     inicioAnimacao = performance.now();
-    ultimoFrame = -1;
 
-    plano.setAttribute("visible", true);
+    ultimoFrame = 0;
+
+    material.opacity = 0;
+
+    plano.object3D.scale.set(
+      0.94,
+      0.94,
+      1
+    );
+
+    plano.setAttribute(
+      "visible",
+      true
+    );
 
     mensagem.textContent =
       "Descobre as minhas ilustrações! ✦";
 
     atualizar(++sessao);
+
   }
 
-  // MÚSICA CONTINUA 3 SEGUNDOS NO FINAL
+  // =====================================
+  // TERMINAR A ANIMAÇÃO
+  // =====================================
 
   function terminarAnimacao() {
+
     emAnimacao = false;
     emFinalMusical = true;
+
     sessao++;
 
     if (pedidoFrame !== null) {
+
       cancelAnimationFrame(pedidoFrame);
+
       pedidoFrame = null;
+
     }
 
-    plano.setAttribute("visible", false);
+    // GARANTIR DESAPARECIMENTO COMPLETO
+
+    material.opacity = 0;
+
+    plano.setAttribute(
+      "visible",
+      false
+    );
 
     mensagem.textContent =
       "Animação concluída! ✦";
 
+    // A MÚSICA CONTINUA ATÉ AOS 16 S
+
     const decorrido =
       performance.now() - inicioCiclo;
 
+    const restante = Math.max(
+      0,
+      INTRO + DURACAO + FINAL - decorrido
+    );
+
     timerFinal = setTimeout(
       finalizar,
-      Math.max(0, INTRO + DURACAO + FINAL - decorrido)
+      restante
     );
+
   }
 
+  // =====================================
+  // TERMINAR A MÚSICA
+  // =====================================
+
   function finalizar() {
+
     clearTimeout(timerFinal);
-    clearTimeout(timerLimite);
 
     timerFinal = null;
-    timerLimite = null;
 
     pararMusica();
+
     emFinalMusical = false;
 
     mensagem.textContent =
@@ -602,18 +1190,29 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!reconhecido) {
       executado = false;
     }
+
   }
 
-  // MÚSICA COMEÇA 3 SEGUNDOS ANTES
-  // DA ANIMAÇÃO
+  // =====================================
+  // RECONHECIMENTO DA ESTRELA
+  // 3 SEGUNDOS ANTES DA ANIMAÇÃO
+  // =====================================
 
   function prepararInicio() {
-    if (!pronto || !reconhecido || executado) {
+
+    if (
+      !pronto ||
+      !reconhecido ||
+      executado
+    ) {
       return;
     }
 
     executado = true;
+
     inicioCiclo = performance.now();
+
+    // MÚSICA COMEÇA AQUI
 
     tocarMusica();
 
@@ -623,126 +1222,181 @@ document.addEventListener("DOMContentLoaded", () => {
     contagem.hidden = false;
 
     function contar() {
-      if (!reconhecido) return;
+
+      if (
+        !reconhecido ||
+        !executado
+      ) {
+        return;
+      }
 
       const restante =
-        INTRO - (performance.now() - inicioCiclo);
+        INTRO -
+        (performance.now() - inicioCiclo);
 
       if (restante <= 0) {
+
         comecarAnimacao();
         return;
+
       }
 
       contagem.textContent = String(
         Math.ceil(restante / 1000)
       );
 
-      timerIntro = setTimeout(contar, 80);
+      timerIntro = setTimeout(
+        contar,
+        80
+      );
+
     }
 
     contar();
 
-    // LIMITE TOTAL DE 16 SEGUNDOS
-
-    timerLimite = setTimeout(() => {
-      if (executado) {
-        if (emAnimacao) terminarAnimacao();
-        finalizar();
-      }
-    }, INTRO + DURACAO + FINAL);
   }
 
-  // INICIAR A EXPERIÊNCIA
+  // =====================================
+  // INICIAR EXPERIÊNCIA
+  // =====================================
 
   async function iniciar() {
+
     $("botao-iniciar").disabled = true;
 
-    mostrar(carregamento);
-    progresso(0, "A preparar o reconhecimento...");
+    mostrar(ecraCarregamento);
+
+    progresso(
+      0,
+      "A preparar o reconhecimento..."
+    );
 
     autorizarSom();
 
     try {
+
       await carregarBibliotecas();
+
       await carregarImagens();
 
-      progresso(88, "A preparar o scanner...");
+      progresso(
+        88,
+        "A preparar a composição AR..."
+      );
 
-      // Scanner visível debaixo do carregamento
-      scanner.classList.add("ativo");
+      // MANTER CENA ATIVA POR BAIXO
+      // DO ECRÃ DE CARREGAMENTO
+
+      ecraScanner.classList.add("preparar");
 
       criarCena();
+
       await prepararTextura();
 
-      progresso(94, "A iniciar a câmara...");
+      progresso(
+        94,
+        "A iniciar a câmara..."
+      );
 
       const sistema =
         cena.systems["mindar-image-system"];
 
       if (!sistema) {
+
         throw new Error(
           "O sistema MindAR não foi iniciado."
         );
+
       }
 
       await sistema.start();
 
       pronto = true;
 
-      progresso(100, "Tudo pronto!");
+      progresso(
+        100,
+        "Tudo pronto!"
+      );
 
-      // Retirar ecrã de carregamento
-      mostrar(scanner);
+      mostrar(ecraScanner);
 
       mensagem.textContent =
         "Aponta a câmara para a estrela ✦";
 
-      if (reconhecido) prepararInicio();
+      if (reconhecido) {
+        prepararInicio();
+      }
 
-    } catch (e) {
+    } catch (erro) {
+
       mostrarErro(
         "Não foi possível carregar a experiência " +
-        "de realidade aumentada. Verifica a ligação " +
-        "à Internet, os ficheiros e as permissões " +
-        "da câmara e tenta novamente.",
-        e
+        "de realidade aumentada. Verifica a " +
+        "ligação à Internet e as permissões " +
+        "da câmara.",
+        erro
       );
+
     }
+
   }
 
+  // =====================================
   // BOTÕES
+  // =====================================
 
   $("botao-iniciar").addEventListener(
-    "click", iniciar
+    "click",
+    iniciar
   );
 
   $("botao-tentar").addEventListener(
-    "click", () => window.location.reload()
+    "click",
+    () => window.location.reload()
   );
 
-  botaoSom.addEventListener("click", async () => {
-    try {
-      if (executado) {
-        audio.currentTime = Math.min(
-          (performance.now() - inicioCiclo) / 1000,
-          16
+  botaoSom.addEventListener(
+    "click",
+    async () => {
+
+      try {
+
+        if (executado) {
+
+          const segundos = Math.min(
+            (performance.now() - inicioCiclo) / 1000,
+            16
+          );
+
+          audio.currentTime = segundos;
+
+        } else {
+
+          audio.currentTime = 0;
+
+        }
+
+        await audio.play();
+
+        if (!executado) {
+
+          audio.pause();
+          audio.currentTime = 0;
+
+        }
+
+        botaoSom.hidden = true;
+
+      } catch (erro) {
+
+        console.warn(
+          "Não foi possível ativar o som:",
+          erro
         );
-      } else {
-        audio.currentTime = 0;
+
       }
 
-      await audio.play();
-
-      if (!executado) {
-        audio.pause();
-        audio.currentTime = 0;
-      }
-
-      botaoSom.hidden = true;
-
-    } catch (e) {
-      console.warn("Não foi possível ativar som:", e);
     }
-  });
+  );
 
 });

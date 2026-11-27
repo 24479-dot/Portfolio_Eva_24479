@@ -15,6 +15,8 @@
   --azul-medio: #436D98;
   --azul-claro: #AED5F0;
   --branco: #FFFFFF;
+
+  --fundo-ilustracoes: #f4f8fb;
 }
 
 /* =========================================
@@ -46,19 +48,19 @@ button {
 
 button:focus-visible,
 a:focus-visible {
-  outline: 3px solid #FFFFFF;
+  outline: 3px solid white;
   outline-offset: 3px;
 }
 
 .aplicacao {
+  position: relative;
   width: 100%;
   height: 100dvh;
-  position: relative;
   overflow: hidden;
 }
 
 /* =========================================
-   ECRÃS COM DEGRADÉ AZUL
+   ECRÃS COM DEGRADÉ
 ========================================= */
 
 .ecra {
@@ -76,7 +78,6 @@ a:focus-visible {
     calc(30px + env(safe-area-inset-bottom));
 
   overflow-y: auto;
-
   text-align: center;
 
   background:
@@ -101,7 +102,7 @@ a:focus-visible {
 
 .ecra.ativo {
   display: flex;
-  animation: aparecer 0.35s ease-out;
+  animation: aparecer 0.45s ease-out both;
 }
 
 #inicio {
@@ -123,15 +124,17 @@ a:focus-visible {
 @keyframes aparecer {
   from {
     opacity: 0;
+    transform: translateY(8px);
   }
 
   to {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
 /* =========================================
-   CONTEÚDO CENTRADO
+   CONTEÚDO
 ========================================= */
 
 .conteudo {
@@ -165,7 +168,7 @@ h1,
 h2 {
   font-family: "Shrikhand", Georgia, serif;
   font-weight: normal;
-  color: var(--branco);
+  color: white;
 
   text-align: center;
   line-height: 1.2;
@@ -183,12 +186,10 @@ h2 {
 
 .descricao {
   font-family: Georgia, serif;
-
   font-size: clamp(17px, 4.6vw, 22px);
   line-height: 1.65;
 
   color: #E5F3FF;
-
   margin: 0 0 46px;
 }
 
@@ -198,7 +199,6 @@ h2 {
   line-height: 1.6;
 
   color: #D5E9FA;
-
   margin: 28px 0 0;
 }
 
@@ -214,7 +214,7 @@ h2 {
   padding: 17px 22px;
 
   background: #FFFFFF14;
-  color: #FFFFFF;
+  color: white;
 
   border: 2px solid #C7E4FA;
   border-radius: 15px;
@@ -265,7 +265,8 @@ h2 {
   font-size: 24px;
   color: #D7EDFF;
 
-  animation: flutuar 4s ease-in-out infinite alternate;
+  animation:
+    flutuar 4s ease-in-out infinite alternate;
 }
 
 .decoracao span:nth-child(1) {
@@ -312,7 +313,6 @@ h2 {
   height: 190px;
 
   margin: 5px 0 37px;
-
   padding: 8px;
 
   border-radius: 50%;
@@ -345,7 +345,7 @@ h2 {
 #percentagem {
   font-family: Georgia, serif;
   font-size: 48px;
-  color: #FFFFFF;
+  color: white;
 }
 
 .barra-progresso {
@@ -403,11 +403,12 @@ h2 {
 
 .ecra-scanner {
   padding: 0;
-  background: #000000;
+  background: black;
   overflow: hidden;
 }
 
-.ecra-scanner.ativo {
+.ecra-scanner.ativo,
+.ecra-scanner.preparar {
   display: block;
 }
 
@@ -421,6 +422,7 @@ h2 {
 #area-ar a-scene {
   position: absolute;
   inset: 0;
+
   width: 100%;
   height: 100%;
 }
@@ -464,7 +466,6 @@ h2 {
 
 #mensagem-scanner {
   max-width: 95%;
-
   padding: 13px 20px;
 
   background: #203A58E8;
@@ -475,11 +476,12 @@ h2 {
 
   font-size: 13px;
   line-height: 1.4;
-
   margin: 0;
 }
 
-/* CONTAGEM 3, 2, 1 */
+/* =========================================
+   CONTAGEM ANTES DA ANIMAÇÃO
+========================================= */
 
 .contagem {
   position: absolute;
@@ -487,7 +489,6 @@ h2 {
 
   top: 50%;
   left: 50%;
-
   transform: translate(-50%, -50%);
 
   width: 125px;
@@ -505,10 +506,6 @@ h2 {
   font-family: Georgia, serif;
   font-size: 72px;
 }
-
-/* =========================================
-   ELEMENTOS OCULTOS
-========================================= */
 
 [hidden] {
   display: none !important;
@@ -542,7 +539,9 @@ h2 {
   }
 }
 
-/* ACESSIBILIDADE */
+/* =========================================
+   ACESSIBILIDADE
+========================================= */
 
 @media (prefers-reduced-motion: reduce) {
 
